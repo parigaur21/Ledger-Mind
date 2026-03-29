@@ -1,0 +1,314 @@
+<!DOCTYPE html>
+
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#3c67e7",
+                        "background-light": "#f8fafc",
+                        "background-dark": "#111521",
+                    },
+                    fontFamily: {
+                        "display": ["Inter"]
+                    },
+                    borderRadius: {"DEFAULT": "0.5rem", "lg": "0.75rem", "xl": "1rem", "full": "9999px"},
+                },
+            },
+        }
+    </script>
+<title>FinChat - Expense Management</title>
+</head>
+<body class="bg-background-light font-display text-slate-900">
+<div class="flex h-screen overflow-hidden">
+<!-- Sidebar Navigation -->
+<aside class="w-64 flex-shrink-0 border-r border-slate-200 bg-white hidden md:flex flex-col">
+<div class="p-6 flex items-center gap-3">
+<div class="size-10 rounded-lg bg-primary flex items-center justify-center text-white shadow-lg shadow-primary/20">
+<span class="material-symbols-outlined">account_balance_wallet</span>
+</div>
+<div>
+<h1 class="text-lg font-bold leading-none">FinChat</h1>
+<p class="text-xs text-slate-500 mt-1">Personal Finance</p>
+</div>
+</div>
+<nav class="flex-1 px-4 space-y-1">
+<a class="flex items-center gap-3 px-3 py-2 text-slate-600 hover:bg-slate-50 rounded-lg transition-colors" href="#">
+<span class="material-symbols-outlined text-[20px]">dashboard</span>
+<span class="text-sm font-medium">Dashboard</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2 bg-primary/5 text-primary rounded-lg" href="#">
+<span class="material-symbols-outlined text-[20px]">receipt_long</span>
+<span class="text-sm font-medium">Expenses</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2 text-slate-600 hover:bg-slate-50 rounded-lg transition-colors" href="#">
+<span class="material-symbols-outlined text-[20px]">account_balance</span>
+<span class="text-sm font-medium">Budgets</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2 text-slate-600 hover:bg-slate-50 rounded-lg transition-colors" href="#">
+<span class="material-symbols-outlined text-[20px]">bar_chart</span>
+<span class="text-sm font-medium">Reports</span>
+</a>
+</nav>
+<div class="p-4 border-t border-slate-100 space-y-1">
+<a class="flex items-center gap-3 px-3 py-2 text-slate-600 hover:bg-slate-50 rounded-lg transition-colors" href="#">
+<span class="material-symbols-outlined text-[20px]">settings</span>
+<span class="text-sm font-medium">Settings</span>
+</a>
+<div class="flex items-center gap-3 px-3 py-4 mt-2 border-t border-slate-100">
+<div class="size-8 rounded-full bg-slate-200 overflow-hidden">
+<img class="w-full h-full object-cover" data-alt="User profile avatar portrait" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBU6SxgnBpoQFQL65DYybHPUuE4EsJ6DwgbIF2LEzZGNVhIhX6eTR3QUdFc7RmMlk4eFJuTKZux_jfsda11_0m7c7S_XsLhgHRBYMiHE97_GlrTBYEvmKSVPxYwSBVZ0GqbsrZv8wSheHeE7Jx_sMDH46eNhYvGJVdCKgYpL3XWk7ip3tvbqDTl0hgi9ZGyfh3toy8PBjPW97nkd9QhVJfTxyXqGFBdtx-ieCx3sqV2rid7w65NzVRV2GvxsCSvFhOCoMvYbvh2-Mr3"/>
+</div>
+<div class="flex-1 min-w-0">
+<p class="text-sm font-semibold truncate">Alex Rivera</p>
+<p class="text-xs text-slate-500 truncate">Pro Plan</p>
+</div>
+</div>
+</div>
+</aside>
+<!-- Main Content -->
+<main class="flex-1 flex flex-col min-w-0 bg-background-light overflow-y-auto">
+<!-- Top Header -->
+<header class="h-16 flex-shrink-0 flex items-center justify-between px-6 border-b border-slate-200 bg-white/80 backdrop-blur-md sticky top-0 z-10">
+<div class="flex items-center gap-4 flex-1">
+<div class="relative w-full max-w-md group">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-[20px]">search</span>
+<input class="w-full pl-10 pr-4 py-2 rounded-lg border border-slate-200 bg-slate-50 focus:bg-white focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all text-sm placeholder:text-slate-400" placeholder="Search transactions, merchants..." type="text"/>
+</div>
+</div>
+<div class="flex items-center gap-3">
+<button class="p-2 text-slate-500 hover:bg-slate-100 rounded-lg">
+<span class="material-symbols-outlined">notifications</span>
+</button>
+<button class="flex items-center gap-2 bg-primary hover:bg-primary/90 text-white px-4 py-2 rounded-lg text-sm font-semibold transition-all shadow-lg shadow-primary/20">
+<span class="material-symbols-outlined text-[20px]">add</span>
+<span>Add Expense</span>
+</button>
+</div>
+</header>
+<div class="p-6 space-y-6 max-w-7xl mx-auto w-full">
+<!-- Filters and Stats Summary -->
+<div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+<div class="flex gap-2 overflow-x-auto pb-2 md:pb-0 scrollbar-hide">
+<button class="flex-shrink-0 px-4 py-1.5 rounded-full bg-primary text-white text-sm font-medium">All</button>
+<button class="flex-shrink-0 px-4 py-1.5 rounded-full bg-white border border-slate-200 hover:border-primary/50 hover:bg-slate-50 text-slate-600 text-sm font-medium transition-colors">Food</button>
+<button class="flex-shrink-0 px-4 py-1.5 rounded-full bg-white border border-slate-200 hover:border-primary/50 hover:bg-slate-50 text-slate-600 text-sm font-medium transition-colors">Housing</button>
+<button class="flex-shrink-0 px-4 py-1.5 rounded-full bg-white border border-slate-200 hover:border-primary/50 hover:bg-slate-50 text-slate-600 text-sm font-medium transition-colors">Transport</button>
+<button class="flex-shrink-0 px-4 py-1.5 rounded-full bg-white border border-slate-200 hover:border-primary/50 hover:bg-slate-50 text-slate-600 text-sm font-medium transition-colors">Shopping</button>
+<button class="flex-shrink-0 px-4 py-1.5 rounded-full bg-white border border-slate-200 hover:border-primary/50 hover:bg-slate-50 text-slate-600 text-sm font-medium transition-colors">Entertainment</button>
+</div>
+<div class="flex items-center gap-2">
+<span class="text-xs font-semibold text-slate-400 uppercase tracking-widest">Sort by:</span>
+<select class="bg-transparent border-none text-sm font-semibold focus:ring-0 cursor-pointer text-slate-700">
+<option>Newest First</option>
+<option>Oldest First</option>
+<option>Highest Amount</option>
+<option>Lowest Amount</option>
+</select>
+</div>
+</div>
+<!-- Transaction Table Container -->
+<div class="bg-white border border-slate-200 rounded-xl overflow-hidden shadow-sm">
+<div class="overflow-x-auto">
+<table class="w-full text-left border-collapse">
+<thead>
+<tr class="bg-slate-50/50">
+<th class="px-6 py-4 text-[11px] font-bold text-slate-400 uppercase tracking-widest">Date</th>
+<th class="px-6 py-4 text-[11px] font-bold text-slate-400 uppercase tracking-widest">Category</th>
+<th class="px-6 py-4 text-[11px] font-bold text-slate-400 uppercase tracking-widest">Merchant</th>
+<th class="px-6 py-4 text-[11px] font-bold text-slate-400 uppercase tracking-widest">Amount</th>
+<th class="px-6 py-4 text-[11px] font-bold text-slate-400 uppercase tracking-widest text-right">Status</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-slate-100">
+<!-- Row 1 -->
+<tr class="group hover:bg-slate-50/50 transition-colors">
+<td class="px-6 py-4 whitespace-nowrap">
+<div class="text-sm font-semibold text-slate-700">Oct 24, 2023</div>
+<div class="text-xs text-slate-400">10:42 AM</div>
+</td>
+<td class="px-6 py-4 whitespace-nowrap">
+<div class="flex items-center gap-3">
+<div class="size-8 rounded-lg bg-orange-100 text-orange-600 flex items-center justify-center">
+<span class="material-symbols-outlined text-[18px]">restaurant</span>
+</div>
+<span class="text-sm font-medium text-slate-700">Food &amp; Dining</span>
+</div>
+</td>
+<td class="px-6 py-4 whitespace-nowrap">
+<div class="text-sm font-bold text-slate-900">Starbucks</div>
+<div class="text-xs text-slate-400">Coffee and snack</div>
+</td>
+<td class="px-6 py-4 whitespace-nowrap">
+<span class="text-sm font-bold text-slate-900">-$6.50</span>
+</td>
+<td class="px-6 py-4 whitespace-nowrap text-right">
+<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-emerald-50 text-emerald-600 uppercase tracking-wider">
+                                            Completed
+                                        </span>
+</td>
+</tr>
+<!-- Row 2 -->
+<tr class="group hover:bg-slate-50/50 transition-colors">
+<td class="px-6 py-4 whitespace-nowrap">
+<div class="text-sm font-semibold text-slate-700">Oct 23, 2023</div>
+<div class="text-xs text-slate-400">09:00 AM</div>
+</td>
+<td class="px-6 py-4 whitespace-nowrap">
+<div class="flex items-center gap-3">
+<div class="size-8 rounded-lg bg-blue-100 text-blue-600 flex items-center justify-center">
+<span class="material-symbols-outlined text-[18px]">home</span>
+</div>
+<span class="text-sm font-medium text-slate-700">Housing</span>
+</div>
+</td>
+<td class="px-6 py-4 whitespace-nowrap">
+<div class="text-sm font-bold text-slate-900">Apex Apartments</div>
+<div class="text-xs text-slate-400">Monthly Rent</div>
+</td>
+<td class="px-6 py-4 whitespace-nowrap">
+<span class="text-sm font-bold text-slate-900">-$1,200.00</span>
+</td>
+<td class="px-6 py-4 whitespace-nowrap text-right">
+<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-amber-50 text-amber-600 uppercase tracking-wider">
+                                            Pending
+                                        </span>
+</td>
+</tr>
+<!-- Row 3 -->
+<tr class="group hover:bg-slate-50/50 transition-colors">
+<td class="px-6 py-4 whitespace-nowrap">
+<div class="text-sm font-semibold text-slate-700">Oct 22, 2023</div>
+<div class="text-xs text-slate-400">06:15 PM</div>
+</td>
+<td class="px-6 py-4 whitespace-nowrap">
+<div class="flex items-center gap-3">
+<div class="size-8 rounded-lg bg-purple-100 text-purple-600 flex items-center justify-center">
+<span class="material-symbols-outlined text-[18px]">commute</span>
+</div>
+<span class="text-sm font-medium text-slate-700">Transport</span>
+</div>
+</td>
+<td class="px-6 py-4 whitespace-nowrap">
+<div class="text-sm font-bold text-slate-900">Uber</div>
+<div class="text-xs text-slate-400">Trip to Downtown</div>
+</td>
+<td class="px-6 py-4 whitespace-nowrap">
+<span class="text-sm font-bold text-slate-900">-$15.20</span>
+</td>
+<td class="px-6 py-4 whitespace-nowrap text-right">
+<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-emerald-50 text-emerald-600 uppercase tracking-wider">
+                                            Completed
+                                        </span>
+</td>
+</tr>
+<!-- Row 4 -->
+<tr class="group hover:bg-slate-50/50 transition-colors">
+<td class="px-6 py-4 whitespace-nowrap">
+<div class="text-sm font-semibold text-slate-700">Oct 21, 2023</div>
+<div class="text-xs text-slate-400">02:30 PM</div>
+</td>
+<td class="px-6 py-4 whitespace-nowrap">
+<div class="flex items-center gap-3">
+<div class="size-8 rounded-lg bg-pink-100 text-pink-600 flex items-center justify-center">
+<span class="material-symbols-outlined text-[18px]">shopping_bag</span>
+</div>
+<span class="text-sm font-medium text-slate-700">Shopping</span>
+</div>
+</td>
+<td class="px-6 py-4 whitespace-nowrap">
+<div class="text-sm font-bold text-slate-900">Amazon</div>
+<div class="text-xs text-slate-400">Electronics &amp; Misc</div>
+</td>
+<td class="px-6 py-4 whitespace-nowrap">
+<span class="text-sm font-bold text-slate-900">-$45.99</span>
+</td>
+<td class="px-6 py-4 whitespace-nowrap text-right">
+<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-emerald-50 text-emerald-600 uppercase tracking-wider">
+                                            Completed
+                                        </span>
+</td>
+</tr>
+<!-- Row 5 -->
+<tr class="group hover:bg-slate-50/50 transition-colors">
+<td class="px-6 py-4 whitespace-nowrap">
+<div class="text-sm font-semibold text-slate-700">Oct 20, 2023</div>
+<div class="text-xs text-slate-400">08:00 PM</div>
+</td>
+<td class="px-6 py-4 whitespace-nowrap">
+<div class="flex items-center gap-3">
+<div class="size-8 rounded-lg bg-teal-100 text-teal-600 flex items-center justify-center">
+<span class="material-symbols-outlined text-[18px]">movie</span>
+</div>
+<span class="text-sm font-medium text-slate-700">Entertainment</span>
+</div>
+</td>
+<td class="px-6 py-4 whitespace-nowrap">
+<div class="text-sm font-bold text-slate-900">Netflix</div>
+<div class="text-xs text-slate-400">Monthly Subscription</div>
+</td>
+<td class="px-6 py-4 whitespace-nowrap">
+<span class="text-sm font-bold text-slate-900">-$15.99</span>
+</td>
+<td class="px-6 py-4 whitespace-nowrap text-right">
+<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-emerald-50 text-emerald-600 uppercase tracking-wider">
+                                            Completed
+                                        </span>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+<!-- Pagination Footer -->
+<div class="px-6 py-4 flex items-center justify-between border-t border-slate-100">
+<span class="text-xs font-semibold text-slate-400">Showing 1 to 5 of 42 transactions</span>
+<div class="flex gap-2">
+<button class="px-4 py-1.5 text-xs font-bold border border-slate-200 rounded-lg hover:bg-slate-50 disabled:opacity-30 transition-colors" disabled="">Previous</button>
+<button class="px-4 py-1.5 text-xs font-bold border border-slate-200 rounded-lg hover:bg-slate-50 transition-colors">Next</button>
+</div>
+</div>
+</div>
+<!-- Footer Summary Cards -->
+<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+<div class="p-6 rounded-xl bg-white border border-slate-200 shadow-sm flex flex-col gap-2 transition-transform hover:scale-[1.01]">
+<span class="text-slate-400 text-[11px] font-bold uppercase tracking-widest">Weekly Spend</span>
+<div class="flex items-baseline gap-2">
+<span class="text-2xl font-bold text-slate-900">$428.12</span>
+<span class="text-xs font-bold text-red-500 bg-red-50 px-2 py-0.5 rounded">+12%</span>
+</div>
+<div class="mt-4 h-1.5 w-full bg-slate-100 rounded-full overflow-hidden">
+<div class="bg-primary h-full w-[65%] rounded-full shadow-[0_0_8px_rgba(60,103,231,0.3)]"></div>
+</div>
+</div>
+<div class="p-6 rounded-xl bg-white border border-slate-200 shadow-sm flex flex-col gap-2 transition-transform hover:scale-[1.01]">
+<span class="text-slate-400 text-[11px] font-bold uppercase tracking-widest">Largest Category</span>
+<div class="flex items-baseline gap-2">
+<span class="text-2xl font-bold text-slate-900">Housing</span>
+<span class="text-xs font-bold text-slate-400 ml-auto">45% total</span>
+</div>
+<div class="mt-4 flex gap-1.5">
+<div class="h-1.5 flex-[3] bg-blue-500 rounded-full"></div>
+<div class="h-1.5 flex-[1.5] bg-orange-400 rounded-full"></div>
+<div class="h-1.5 flex-[1] bg-purple-400 rounded-full"></div>
+<div class="h-1.5 flex-[2] bg-slate-100 rounded-full"></div>
+</div>
+</div>
+<div class="p-6 rounded-xl bg-primary text-white flex flex-col gap-2 shadow-xl shadow-primary/30 transition-transform hover:scale-[1.01]">
+<span class="text-white/70 text-[11px] font-bold uppercase tracking-widest">Total Balance</span>
+<div class="flex items-baseline gap-2">
+<span class="text-3xl font-bold">$12,482.00</span>
+</div>
+<p class="mt-2 text-xs text-white/60 font-medium">Updated 5m ago from Linked Bank</p>
+</div>
+</div>
+</div>
+</main>
+</div>
+</body></html>

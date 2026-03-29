@@ -1,0 +1,325 @@
+<!DOCTYPE html>
+
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>FinChat - AI Financial Copilot</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#3c67e7",
+                        "background-light": "#f8fafc",
+                        "surface": "#ffffff",
+                    },
+                    fontFamily: {
+                        "display": ["Inter"]
+                    },
+                    borderRadius: {"DEFAULT": "0.5rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px"},
+                },
+            },
+        }
+    </script>
+</head>
+<body class="bg-background-light font-display text-slate-900">
+<div class="relative flex h-screen w-full overflow-hidden">
+<!-- Sidebar -->
+<aside class="w-64 border-r border-slate-200 flex flex-col bg-surface">
+<div class="p-6 flex items-center gap-3">
+<div class="bg-primary p-1.5 rounded-lg text-white">
+<span class="material-symbols-outlined text-2xl">account_balance_wallet</span>
+</div>
+<h2 class="text-xl font-bold tracking-tight">FinChat</h2>
+</div>
+<nav class="flex-1 px-4 space-y-1">
+<div class="flex items-center gap-3 px-3 py-2 rounded-lg bg-primary/10 text-primary font-medium">
+<span class="material-symbols-outlined">dashboard</span>
+<span>Dashboard</span>
+</div>
+<div class="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-slate-100 text-slate-600">
+<span class="material-symbols-outlined">payments</span>
+<span>Transactions</span>
+</div>
+<div class="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-slate-100 text-slate-600">
+<span class="material-symbols-outlined">account_balance</span>
+<span>Accounts</span>
+</div>
+<div class="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-slate-100 text-slate-600">
+<span class="material-symbols-outlined">monitoring</span>
+<span>Reports</span>
+</div>
+<div class="pt-4 pb-2 px-3 text-xs font-semibold text-slate-400 uppercase tracking-wider">Strategy</div>
+<div class="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-slate-100 text-slate-600">
+<span class="material-symbols-outlined">ads_click</span>
+<span>Budget Planner</span>
+</div>
+<div class="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-slate-100 text-slate-600">
+<span class="material-symbols-outlined">savings</span>
+<span>Goals</span>
+</div>
+</nav>
+<div class="p-4 border-t border-slate-200">
+<div class="flex items-center gap-3 p-2 rounded-xl hover:bg-slate-100 cursor-pointer transition-colors">
+<div class="w-10 h-10 rounded-full bg-slate-200 overflow-hidden">
+<img class="w-full h-full object-cover" data-alt="User profile avatar close up" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDkg2ap7mwdcWQ-k8F0ZXkFjRwDAfoKIwZDTrKkWvminkuxznKHzRwRsLIYiY4A09l7U3LNbWiUDCdJgFwhYm869ZT6ptG_891lNPQJLAlvNbTLH4kR4pAiAT8by1prV8RUqKuDQbthc6I6EZMwMuCLjK49MsSs8dZPGbFAz0HyTd00RrNmQ3tSjtJRpJrslp9ZenxuhvioQsxHILYY5MnrwPTrqDuTSJcPPzD6QcLr_SWnjQlOWKqq7E69ednTCSkBtBA4pwLDiIEj"/>
+</div>
+<div>
+<p class="text-sm font-semibold">Alex Rivers</p>
+<p class="text-xs text-slate-500">Pro Member</p>
+</div>
+</div>
+</div>
+</aside>
+<!-- Main Content Area -->
+<main class="flex-1 flex flex-col overflow-hidden bg-background-light">
+<!-- Header -->
+<header class="h-16 border-b border-slate-200 flex items-center justify-between px-8 bg-surface/80 backdrop-blur-md">
+<div class="flex items-center gap-4 flex-1">
+<div class="relative w-full max-w-md">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-xl">search</span>
+<input class="w-full bg-slate-100 border-none rounded-lg pl-10 pr-4 py-2 focus:ring-2 focus:ring-primary/20 text-sm" placeholder="Search transactions, bills..." type="text"/>
+</div>
+</div>
+<div class="flex items-center gap-2">
+<button class="w-10 h-10 flex items-center justify-center rounded-lg hover:bg-slate-100 text-slate-500 transition-colors">
+<span class="material-symbols-outlined">notifications</span>
+</button>
+<button class="w-10 h-10 flex items-center justify-center rounded-lg hover:bg-slate-100 text-slate-500 transition-colors">
+<span class="material-symbols-outlined">settings</span>
+</button>
+</div>
+</header>
+<div class="flex-1 flex overflow-hidden">
+<!-- Dashboard View -->
+<section class="flex-1 overflow-y-auto p-8 custom-scrollbar">
+<div class="max-w-4xl mx-auto">
+<div class="mb-8">
+<h1 class="text-2xl font-bold mb-2 text-slate-900">Welcome back, Alex!</h1>
+<p class="text-slate-500">Here's what's happening with your finances today.</p>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+<div class="bg-primary p-6 rounded-xl text-white shadow-lg shadow-primary/20">
+<div class="flex justify-between items-start mb-4">
+<span class="material-symbols-outlined p-2 bg-white/20 rounded-lg">account_balance_wallet</span>
+<span class="text-xs font-bold bg-white/20 px-2 py-1 rounded-full">+2.4%</span>
+</div>
+<p class="text-white/80 text-sm">Total Balance</p>
+<h3 class="text-3xl font-bold mt-1">$45,280.00</h3>
+</div>
+<div class="bg-surface border border-slate-200 p-6 rounded-xl shadow-sm">
+<div class="flex justify-between items-start mb-4">
+<span class="material-symbols-outlined p-2 bg-slate-50 text-slate-600 rounded-lg">shopping_cart</span>
+<span class="text-xs font-bold text-rose-500 bg-rose-50 px-2 py-1 rounded-full">-12%</span>
+</div>
+<p class="text-slate-500 text-sm">Monthly Expenses</p>
+<h3 class="text-3xl font-bold mt-1">$3,120.45</h3>
+</div>
+<div class="bg-surface border border-slate-200 p-6 rounded-xl shadow-sm">
+<div class="flex justify-between items-start mb-4">
+<span class="material-symbols-outlined p-2 bg-slate-50 text-slate-600 rounded-lg">trending_up</span>
+<span class="text-xs font-bold text-emerald-600 bg-emerald-50 px-2 py-1 rounded-full">+8.1%</span>
+</div>
+<p class="text-slate-500 text-sm">Investment Portfolio</p>
+<h3 class="text-3xl font-bold mt-1">$128,400.00</h3>
+</div>
+</div>
+<div class="bg-surface border border-slate-200 rounded-xl overflow-hidden shadow-sm mb-8">
+<div class="p-6 border-b border-slate-200 flex justify-between items-center">
+<h3 class="font-bold text-slate-900">Spending Activity</h3>
+<select class="bg-slate-50 border border-slate-200 rounded-lg text-xs font-semibold py-1.5 px-3 focus:ring-2 focus:ring-primary/20 outline-none">
+<option>Last 7 Days</option>
+<option>Last 30 Days</option>
+</select>
+</div>
+<div class="p-6">
+<div class="h-48 w-full bg-slate-50/50 rounded-lg flex items-end justify-between px-4 pb-2">
+<div class="w-8 bg-primary/20 h-[30%] rounded-t-sm"></div>
+<div class="w-8 bg-primary/20 h-[55%] rounded-t-sm"></div>
+<div class="w-8 bg-primary/20 h-[40%] rounded-t-sm"></div>
+<div class="w-8 bg-primary/20 h-[75%] rounded-t-sm"></div>
+<div class="w-8 bg-primary/20 h-[60%] rounded-t-sm"></div>
+<div class="w-8 bg-primary h-[85%] rounded-t-sm"></div>
+<div class="w-8 bg-primary/20 h-[45%] rounded-t-sm"></div>
+</div>
+<div class="flex justify-between mt-2 px-4 text-xs text-slate-400 font-medium">
+<span>Mon</span><span>Tue</span><span>Wed</span><span>Thu</span><span>Fri</span><span>Sat</span><span>Sun</span>
+</div>
+</div>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+<div class="bg-surface border border-slate-200 rounded-xl p-6 shadow-sm">
+<h3 class="font-bold mb-4 text-slate-900">Upcoming Bills</h3>
+<div class="space-y-4">
+<div class="flex items-center gap-4">
+<div class="size-10 rounded-lg bg-rose-50 text-rose-600 flex items-center justify-center">
+<span class="material-symbols-outlined">wifi</span>
+</div>
+<div class="flex-1">
+<p class="text-sm font-semibold">Internet Subscription</p>
+<p class="text-xs text-slate-500">Due in 2 days</p>
+</div>
+<p class="font-bold text-slate-900">$80.00</p>
+</div>
+<div class="flex items-center gap-4">
+<div class="size-10 rounded-lg bg-amber-50 text-amber-600 flex items-center justify-center">
+<span class="material-symbols-outlined">bolt</span>
+</div>
+<div class="flex-1">
+<p class="text-sm font-semibold">Electric Bill</p>
+<p class="text-xs text-slate-500">Due in 5 days</p>
+</div>
+<p class="font-bold text-slate-900">$142.50</p>
+</div>
+</div>
+</div>
+<div class="bg-surface border border-slate-200 rounded-xl p-6 shadow-sm">
+<h3 class="font-bold mb-4 text-slate-900">Recent Transactions</h3>
+<div class="space-y-4">
+<div class="flex items-center gap-4">
+<div class="size-10 rounded-lg bg-slate-50 text-slate-600 flex items-center justify-center">
+<span class="material-symbols-outlined">shopping_bag</span>
+</div>
+<div class="flex-1">
+<p class="text-sm font-semibold text-slate-900">Apple Store</p>
+<p class="text-xs text-slate-500">Yesterday, 4:20 PM</p>
+</div>
+<p class="font-bold text-slate-900">-$1,299.00</p>
+</div>
+<div class="flex items-center gap-4">
+<div class="size-10 rounded-lg bg-slate-50 text-slate-600 flex items-center justify-center">
+<span class="material-symbols-outlined">restaurant</span>
+</div>
+<div class="flex-1">
+<p class="text-sm font-semibold text-slate-900">The Green Bistro</p>
+<p class="text-xs text-slate-500">Oct 24, 8:15 PM</p>
+</div>
+<p class="font-bold text-slate-900">-$54.20</p>
+</div>
+</div>
+</div>
+</div>
+</div>
+</section>
+<!-- AI Copilot Side Panel (Chat Interface) -->
+<section class="w-[420px] border-l border-slate-200 flex flex-col bg-slate-50/50">
+<div class="p-4 border-b border-slate-200 flex items-center justify-between bg-surface">
+<div class="flex items-center gap-3">
+<div class="size-10 rounded-full bg-primary flex items-center justify-center text-white shadow-md shadow-primary/20">
+<span class="material-symbols-outlined">smart_toy</span>
+</div>
+<div>
+<h3 class="text-sm font-bold text-slate-900">FinAI Copilot</h3>
+<div class="flex items-center gap-1">
+<span class="size-2 bg-emerald-500 rounded-full"></span>
+<span class="text-[10px] text-slate-500 font-bold uppercase tracking-wider">Active</span>
+</div>
+</div>
+</div>
+<button class="text-slate-400 hover:text-slate-600 transition-colors">
+<span class="material-symbols-outlined">more_vert</span>
+</button>
+</div>
+<!-- Chat History -->
+<div class="flex-1 overflow-y-auto p-4 space-y-6 custom-scrollbar">
+<div class="text-center">
+<span class="text-[10px] font-bold text-slate-400 bg-slate-200/50 px-2 py-1 rounded uppercase tracking-widest">Today</span>
+</div>
+<!-- AI Message -->
+<div class="flex gap-3 max-w-[90%]">
+<div class="size-8 rounded-full bg-primary flex-shrink-0 flex items-center justify-center text-white">
+<span class="material-symbols-outlined text-base">smart_toy</span>
+</div>
+<div class="bg-surface p-4 rounded-2xl rounded-tl-none shadow-sm border border-slate-200 text-sm leading-relaxed text-slate-700">
+                            Hello Alex! I've been monitoring your accounts. Your net worth increased by <span class="text-emerald-600 font-bold">2.4%</span> this week. Is there anything specific you'd like to dive into?
+                        </div>
+</div>
+<!-- User Message -->
+<div class="flex gap-3 max-w-[90%] ml-auto flex-row-reverse">
+<div class="size-8 rounded-full bg-slate-200 flex-shrink-0 flex items-center justify-center overflow-hidden">
+<img class="w-full h-full object-cover" data-alt="User avatar thumbnail" src="https://lh3.googleusercontent.com/aida-public/AB6AXuC4dc-OH-hSv-IEY3d4aX_bH-rJZ6S_uM8i_ic9cuRtVub69b0hiMADLJ8nIWbfbPYuqE6nYzRmWOLcel83RyzrSneWqJQ9GxsWCPOJyap_VMOTTWGznyw3OBXRe2a_NyB1jsO_aa_Gm5GEXDSKR7y4oKDVvs8fZQ-3jPgVeGN65e6dLKgpaZIBMaFayFTyMbIOmHBV1pvESd8Ta9jkqHLGGzhLayJTLbyA42gu_zIo2hWgn9QZKz1MNyqaaO0Ff6h5CaeW9ZAUOI7r"/>
+</div>
+<div class="bg-primary text-white p-4 rounded-2xl rounded-tr-none shadow-sm text-sm">
+                            How much did I spend this week on dining out?
+                        </div>
+</div>
+<!-- AI Message -->
+<div class="flex gap-3 max-w-[90%]">
+<div class="size-8 rounded-full bg-primary flex-shrink-0 flex items-center justify-center text-white">
+<span class="material-symbols-outlined text-base">smart_toy</span>
+</div>
+<div class="bg-surface p-4 rounded-2xl rounded-tl-none shadow-sm border border-slate-200 text-sm leading-relaxed text-slate-700">
+<p class="mb-2">You spent <span class="font-bold text-slate-900">$450.00</span> on dining this week across 4 transactions.</p>
+<div class="space-y-2 bg-slate-50 p-2 rounded-lg mt-2 border border-slate-100">
+<div class="flex justify-between text-xs">
+<span>The Green Bistro</span>
+<span class="font-semibold text-slate-900">$54.20</span>
+</div>
+<div class="flex justify-between text-xs">
+<span>Sushi Zen</span>
+<span class="font-semibold text-slate-900">$120.80</span>
+</div>
+<div class="flex justify-between text-xs border-t border-slate-200 pt-1 mt-1">
+<span class="font-medium">Total Dining</span>
+<span class="font-bold text-slate-900">$450.00</span>
+</div>
+</div>
+<p class="mt-3 text-xs text-slate-500">This is 15% higher than your weekly average. Would you like to set a dining budget?</p>
+</div>
+</div>
+</div>
+<!-- Input & Actions -->
+<div class="p-4 bg-surface border-t border-slate-200 shadow-[0_-4px_12px_rgba(0,0,0,0.02)]">
+<!-- Quick Actions -->
+<div class="flex flex-wrap gap-2 mb-4">
+<button class="text-[11px] font-semibold px-3 py-1.5 rounded-full bg-slate-50 border border-slate-200 text-slate-600 hover:bg-primary/5 hover:border-primary/30 hover:text-primary transition-all flex items-center gap-1.5">
+<span class="material-symbols-outlined text-sm">summarize</span> Show reports
+                        </button>
+<button class="text-[11px] font-semibold px-3 py-1.5 rounded-full bg-slate-50 border border-slate-200 text-slate-600 hover:bg-primary/5 hover:border-primary/30 hover:text-primary transition-all flex items-center gap-1.5">
+<span class="material-symbols-outlined text-sm">add_circle</span> Add expense
+                        </button>
+<button class="text-[11px] font-semibold px-3 py-1.5 rounded-full bg-slate-50 border border-slate-200 text-slate-600 hover:bg-primary/5 hover:border-primary/30 hover:text-primary transition-all flex items-center gap-1.5">
+<span class="material-symbols-outlined text-sm">savings</span> Savings goal
+                        </button>
+</div>
+<!-- Text Area -->
+<div class="relative">
+<textarea class="w-full bg-slate-100 border-none rounded-xl px-4 py-3 pr-12 text-sm focus:ring-2 focus:ring-primary/20 resize-none placeholder:text-slate-400 text-slate-700" placeholder="Ask anything..." rows="1"></textarea>
+<button class="absolute right-2 bottom-2 size-8 bg-primary text-white rounded-lg flex items-center justify-center hover:bg-primary/90 transition-all shadow-sm">
+<span class="material-symbols-outlined text-xl">arrow_upward</span>
+</button>
+</div>
+<div class="mt-3 flex items-center justify-between px-1">
+<div class="flex items-center gap-3 text-slate-400">
+<button class="hover:text-primary transition-colors"><span class="material-symbols-outlined text-lg">attach_file</span></button>
+<button class="hover:text-primary transition-colors"><span class="material-symbols-outlined text-lg">mic</span></button>
+<button class="hover:text-primary transition-colors"><span class="material-symbols-outlined text-lg">image</span></button>
+</div>
+<p class="text-[10px] text-slate-400 font-medium italic">FinAI can make mistakes. Verify important info.</p>
+</div>
+</div>
+</section>
+</div>
+</main>
+</div>
+<style>
+    .custom-scrollbar::-webkit-scrollbar {
+        width: 6px;
+    }
+    .custom-scrollbar::-webkit-scrollbar-track {
+        background: transparent;
+    }
+    .custom-scrollbar::-webkit-scrollbar-thumb {
+        background: rgba(60, 103, 231, 0.1);
+        border-radius: 10px;
+    }
+    .custom-scrollbar:hover::-webkit-scrollbar-thumb {
+        background: rgba(60, 103, 231, 0.2);
+    }
+</style>
+</body></html>
