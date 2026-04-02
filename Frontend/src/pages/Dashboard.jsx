@@ -129,7 +129,21 @@ export default function Dashboard() {
   ];
 
   return (
-    <div className="space-y-6 animate-fade-in">
+    <div className="space-y-6 animate-fade-in relative">
+      {/* Dashboard Video Background */}
+      <div className="fixed inset-0 z-[-1] overflow-hidden pointer-events-none opacity-[0.07] grayscale contrast-150">
+        <video
+          autoPlay
+          loop
+          muted
+          playsInline
+          className="w-full h-full object-cover"
+        >
+          <source src="/dashboard_bg.mp4" type="video/mp4" />
+        </video>
+        <div className="absolute inset-0 bg-dark-900/40" />
+      </div>
+
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <h1 className="text-2xl font-bold text-white">Welcome back, {user?.name?.split(' ')[0]}!</h1>

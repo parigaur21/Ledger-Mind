@@ -28,9 +28,12 @@ api.interceptors.response.use(
 );
 
 export const authAPI = {
+  login: (email, password) => api.post('/auth/login', { email, password }),
+  register: (data) => api.post('/auth/register', data),
   getProfile: () => api.get('/auth/profile'),
   updateProfile: (data) => api.put('/auth/profile', data)
 };
+
 
 export const expenseAPI = {
   getAll: (params) => api.get('/transactions', { params }),
@@ -62,9 +65,23 @@ export const groupAPI = {
 };
 
 export const chatAPI = {
-  sendMessage: (query) => api.post('/ai/finance', { query }),
-  getHistory: () => Promise.resolve({ data: { messages: [] } }),
-  clearHistory: () => Promise.resolve()
+  sendMessage: (message) => api.post('/chat/message', { message }),
+  getInsights: () => api.get('/chat/insights'),
+  getHistory: () => api.get('/chat/history'),
+  clearHistory: () => api.delete('/chat/history')
 };
+
+export const statementAPI = {
+  upload: (file) => {
+    const formData = new FormData();
+    formData.append('statement', file);
+    return api.post('/statement/upload', formData, {
+      headers: { 'Content-Type': 'multipart/form-data' }
+    });
+  }
+};
+
+
+
 
 export default api;

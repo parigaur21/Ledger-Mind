@@ -5,6 +5,9 @@ const cors = require('cors');
 const { Server } = require('socket.io');
 const errorHandler = require('./middleware/errorHandler');
 const setupSocket = require('./sockets/socketHandler');
+const connectDB = require('./config/db');
+
+connectDB();
 
 const transactionRoutes = require('./routes/transactionRoutes');
 const analyticsRoutes = require('./routes/analyticsRoutes');
@@ -14,7 +17,9 @@ const budgetRoutes = require('./routes/budgetRoutes');
 const chatRoutes = require('./routes/chatRoutes');
 const groupRoutes = require('./routes/groupRoutes');
 const expenseRoutes = require('./routes/expenseRoutes');
+const statementRoutes = require('./routes/statementRoutes');
 const app = express();
+
 const server = http.createServer(app);
 
 const io = new Server(server, {
@@ -36,15 +41,18 @@ app.use(express.json());
 app.get('/api/health', (req, res) => {
   res.json({ status: 'ok', timestamp: new Date().toISOString() });
 });
-// Updated routes
-app.use('/transactions', transactionRoutes);
-app.use('/analytics', analyticsRoutes);
-app.use('/ai', aiRoutes);
-app.use('/auth', authRoutes);
-app.use('/budgets', budgetRoutes);
-app.use('/chat', chatRoutes);
-app.use('/groups', groupRoutes);
-app.use('/expenses', expenseRoutes);
+// Updated routes with /api prefix
+app.use('/api/transactions', transactionRoutes);
+app.use('/api/analytics', analyticsRoutes);
+app.use('/api/ai', aiRoutes);
+app.use('/api/auth', authRoutes);
+app.use('/api/budgets', budgetRoutes);
+app.use('/api/chat', chatRoutes);
+app.use('/api/groups', groupRoutes);
+app.use('/api/expenses', expenseRoutes);
+app.use('/api/statement', statementRoutes);
+
+
 app.use(errorHandler);
 
 const PORT = process.env.PORT || 5000;

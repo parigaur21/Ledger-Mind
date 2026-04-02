@@ -1,5 +1,5 @@
 import { createContext, useContext, useState, useEffect } from 'react';
-import { supabase } from '../config/supabase';
+import { authAPI } from '../services/api';
 
 const AuthContext = createContext(null);
 
@@ -11,52 +11,68 @@ export const useAuth = () => {
 
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
-  const [session, setSession] = useState(null);
+  const [token, setToken] = useState(localStorage.getItem('finchat_token'));
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setSession(session);
-      setUser(session?.user ?? null);
-      if (session?.access_token) {
-        localStorage.setItem('finchat_token', session.access_token);
+    const initAuth = async () => {
+      const storedUser = localStorage.getItem('finchat_user');
+      const storedToken = localStorage.getItem('finchat_token');
+      
+      if (storedUser && storedToken) {
+        try {
+          setUser(JSON.parse(storedUser));
+          setToken(storedToken);
+          // Optionally verify token with profile call
+          const res = await authAPI.getProfile();
+          setUser(res.data.user);
+        } catch (err) {
+          console.error('Session restoration failed:', err);
+          logout();
+        }
       }
       setLoading(false);
-    });
+    };
 
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-      setSession(session);
-      setUser(session?.user ?? null);
-      if (session?.access_token) {
-        localStorage.setItem('finchat_token', session.access_token);
-      } else {
-        localStorage.removeItem('finchat_token');
-      }
-      setLoading(false);
-    });
-
-    return () => subscription.unsubscribe();
+    initAuth();
   }, []);
 
   const login = async (email, password) => {
-    const { data, error } = await supabase.auth.signInWithPassword({ email, password });
-    if (error) throw error;
-    return data;
+    const res = await authAPI.login(email, password);
+    const { token, user } = res.data;
+    
+    localStorage.setItem('finchat_token', token);
+    localStorage.setItem('finchat_user', JSON.stringify(user));
+    
+    setToken(token);
+    setUser(user);
+    return res.data;
   };
 
   const register = async (name, email, password) => {
-    const { data, error } = await supabase.auth.signUp({ email, password, options: { data: { name } } });
-    if (error) throw error;
-    return data;
+    const res = await authAPI.register({ name, email, password });
+    const { token, user } = res.data;
+    
+    localStorage.setItem('finchat_token', token);
+    localStorage.setItem('finchat_user', JSON.stringify(user));
+    
+    setToken(token);
+    setUser(user);
+    return res.data;
   };
 
-  const logout = async () => {
-    await supabase.auth.signOut();
+  const logout = () => {
+    localStorage.removeItem('finchat_token');
+    localStorage.removeItem('finchat_user');
+    setToken(null);
+    setUser(null);
+    window.location.href = '/login';
   };
 
   return (
-    <AuthContext.Provider value={{ user, session, loading, login, register, logout }}>
+    <AuthContext.Provider value={{ user, token, loading, login, register, logout }}>
       {children}
     </AuthContext.Provider>
   );
 };
+

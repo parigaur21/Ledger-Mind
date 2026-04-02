@@ -1,8 +1,9 @@
 import { useState, useEffect } from 'react';
-import { expenseAPI } from '../services/api';
+import { expenseAPI, statementAPI } from '../services/api';
 import { getSocket } from '../services/socket';
 import {
-  Plus, Search, Edit3, Trash2, X, Filter, ChevronLeft, ChevronRight, Download
+  Plus, Search, Edit3, Trash2, X, Filter, ChevronLeft, ChevronRight, Download, FileText
+
 } from 'lucide-react';
 
 const CATEGORIES = ['all', 'food', 'transport', 'housing', 'shopping', 'entertainment', 'utilities', 'healthcare', 'education', 'travel', 'salary', 'freelance', 'investment', 'gift', 'other'];
@@ -143,6 +144,29 @@ export default function Expenses() {
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <h1 className="text-2xl font-bold text-white">Transactions</h1>
         <div className="flex gap-3">
+          <label className="cursor-pointer flex items-center gap-2 px-5 py-2.5 rounded-xl border border-dark-600/50 text-dark-200 hover:text-white hover:border-dark-400 hover:bg-dark-700/50 transition-all text-sm font-semibold">
+            <input 
+              type="file" 
+              className="hidden" 
+              accept=".pdf,.csv,.txt"
+              onChange={async (e) => {
+                const file = e.target.files[0];
+                if (!file) return;
+                try {
+                  setLoading(true);
+                  const res = await statementAPI.upload(file);
+                  alert(res.data.message);
+                  fetchExpenses(1);
+                } catch (err) {
+                  alert(err.response?.data?.message || 'Upload failed');
+                } finally {
+                  setLoading(false);
+                }
+              }}
+            />
+            <FileText size={18} className="text-accent-500" />
+            Import Statement
+          </label>
           <button
             onClick={exportToCSV}
             className="flex items-center gap-2 px-5 py-2.5 rounded-xl border border-dark-600/50 text-dark-200 hover:text-white hover:border-dark-400 hover:bg-dark-700/50 transition-all text-sm font-semibold"
@@ -159,6 +183,7 @@ export default function Expenses() {
             Add Transaction
           </button>
         </div>
+
       </div>
 
       <div className="flex flex-wrap items-center gap-2">
