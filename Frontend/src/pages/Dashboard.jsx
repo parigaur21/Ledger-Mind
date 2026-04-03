@@ -130,19 +130,8 @@ export default function Dashboard() {
 
   return (
     <div className="space-y-6 animate-fade-in relative">
-      {/* Dashboard Video Background */}
-      <div className="fixed inset-0 z-[-1] overflow-hidden pointer-events-none opacity-[0.07] grayscale contrast-150">
-        <video
-          autoPlay
-          loop
-          muted
-          playsInline
-          className="w-full h-full object-cover"
-        >
-          <source src="/dashboard_bg.mp4" type="video/mp4" />
-        </video>
-        <div className="absolute inset-0 bg-dark-900/40" />
-      </div>
+      {/* Neo Minimalist Finish Element */}
+      <div className="fixed inset-0 z-[-1] overflow-hidden pointer-events-none bg-dark-900" />
 
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
@@ -209,14 +198,14 @@ export default function Dashboard() {
               <XAxis dataKey="month" tick={{ fill: '#64748b', fontSize: 12 }} axisLine={false} tickLine={false} />
               <YAxis tick={{ fill: '#64748b', fontSize: 12 }} axisLine={false} tickLine={false} tickFormatter={v => `₹${v}`} />
               <Tooltip
-                contentStyle={{ backgroundColor: '#151d2e', border: '1px solid rgba(148,163,184,0.15)', borderRadius: 12, color: '#fff' }}
+                contentStyle={{ backgroundColor: '#121212', border: '1px solid rgba(255,255,255,0.06)', borderRadius: 8, color: '#fff' }}
                 formatter={(v) => [`₹${v.toLocaleString('en-IN')}`, 'Spending']}
               />
               <Bar dataKey="total" fill="url(#barGradient)" radius={[6, 6, 0, 0]} />
               <defs>
                 <linearGradient id="barGradient" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="0%" stopColor="#6366f1" />
-                  <stop offset="100%" stopColor="#4f46e5" />
+                  <stop offset="0%" stopColor="#3b82f6" />
+                  <stop offset="100%" stopColor="#1e3a8a" />
                 </linearGradient>
               </defs>
             </BarChart>
@@ -244,7 +233,7 @@ export default function Dashboard() {
                     ))}
                   </Pie>
                   <Tooltip
-                    contentStyle={{ backgroundColor: '#151d2e', border: '1px solid rgba(148,163,184,0.15)', borderRadius: 12, color: '#fff' }}
+                    contentStyle={{ backgroundColor: '#121212', border: '1px solid rgba(255,255,255,0.06)', borderRadius: 8, color: '#fff' }}
                     formatter={(v) => [`₹${v.toLocaleString('en-IN')}`, '']}
                   />
                 </PieChart>

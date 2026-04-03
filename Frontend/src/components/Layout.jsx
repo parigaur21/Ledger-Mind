@@ -38,68 +38,8 @@ export default function Layout() {
 
   return (
     <div className="flex h-screen overflow-hidden bg-dark-900 relative">
-      {/* ── CINEMATIC ANIMATED BACKGROUND ── */}
-      <div className="fixed inset-0 z-0 pointer-events-none overflow-hidden">
-        {/* Base dark gradient */}
-        <div className="absolute inset-0 bg-gradient-to-br from-[#05070a] via-[#0a0e14] to-[#060a10]" />
-        
-        {/* Animated floating orbs */}
-        <div className="absolute top-[-20%] left-[-10%] w-[600px] h-[600px] rounded-full opacity-[0.07]"
-          style={{
-            background: 'radial-gradient(circle, #00E5FF 0%, transparent 70%)',
-            animation: 'floatOrb1 25s ease-in-out infinite',
-          }}
-        />
-        <div className="absolute bottom-[-15%] right-[-5%] w-[500px] h-[500px] rounded-full opacity-[0.05]"
-          style={{
-            background: 'radial-gradient(circle, #FF00E5 0%, transparent 70%)',
-            animation: 'floatOrb2 30s ease-in-out infinite',
-          }}
-        />
-        <div className="absolute top-[40%] right-[20%] w-[400px] h-[400px] rounded-full opacity-[0.04]"
-          style={{
-            background: 'radial-gradient(circle, #39FF14 0%, transparent 70%)',
-            animation: 'floatOrb3 20s ease-in-out infinite',
-          }}
-        />
-        
-        {/* Subtle grid overlay */}
-        <div className="absolute inset-0 opacity-[0.03]"
-          style={{
-            backgroundImage: `linear-gradient(rgba(0,229,255,0.3) 1px, transparent 1px), linear-gradient(90deg, rgba(0,229,255,0.3) 1px, transparent 1px)`,
-            backgroundSize: '60px 60px',
-          }}
-        />
-        
-        {/* Noise texture overlay */}
-        <div className="absolute inset-0 opacity-[0.015]"
-          style={{
-            backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.5'/%3E%3C/svg%3E")`,
-          }}
-        />
-      </div>
-
-      {/* Keyframes injected as inline style */}
-      <style>{`
-        @keyframes floatOrb1 {
-          0%, 100% { transform: translate(0, 0) scale(1); }
-          25% { transform: translate(80px, 60px) scale(1.1); }
-          50% { transform: translate(40px, -40px) scale(0.95); }
-          75% { transform: translate(-30px, 50px) scale(1.05); }
-        }
-        @keyframes floatOrb2 {
-          0%, 100% { transform: translate(0, 0) scale(1); }
-          33% { transform: translate(-60px, -50px) scale(1.08); }
-          66% { transform: translate(50px, 30px) scale(0.92); }
-        }
-        @keyframes floatOrb3 {
-          0%, 100% { transform: translate(0, 0) scale(1); }
-          50% { transform: translate(-70px, 60px) scale(1.12); }
-        }
-      `}</style>
-
       <div
-        className={`fixed inset-0 bg-black/60 z-40 backdrop-blur-sm lg:hidden transition-opacity duration-300 ${sidebarOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}
+        className={`fixed inset-0 bg-dark-900/60 z-40 backdrop-blur-sm lg:hidden transition-opacity duration-300 ${sidebarOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}
         onClick={() => setSidebarOpen(false)}
       />
 

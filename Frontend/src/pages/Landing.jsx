@@ -1,42 +1,31 @@
-import { useRef, useEffect, useState } from 'react';
+import { useRef, useState, useEffect } from 'react';
 import { Link, Navigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import {
-  motion,
-  useScroll,
-  useTransform,
-  useMotionValue,
-  useSpring,
-  useInView,
-  AnimatePresence
-} from 'framer-motion';
+import { motion, useInView, useScroll, useTransform } from 'framer-motion';
 import {
   ArrowRight,
-  Bot,
-  LineChart,
   Shield,
   Zap,
   Wallet,
-  TrendingUp,
-  TrendingDown,
-  Sparkles,
-  ChevronDown,
-  Upload,
-  MessageSquare,
-  PieChart
+  PieChart,
+  LineChart,
+  Bot,
+  ChevronRight,
+  Terminal,
+  Sun,
+  Moon
 } from 'lucide-react';
 
 /* ═══════════════════════════════════════════
    REUSABLE ANIMATED COMPONENTS
    ═══════════════════════════════════════════ */
-
 const FadeUp = ({ children, delay = 0, className = '' }) => {
   const ref = useRef(null);
   const isInView = useInView(ref, { once: true, margin: '-80px' });
   return (
     <motion.div
       ref={ref}
-      initial={{ opacity: 0, y: 60 }}
+      initial={{ opacity: 0, y: 40 }}
       animate={isInView ? { opacity: 1, y: 0 } : {}}
       transition={{ duration: 0.8, delay, ease: [0.16, 1, 0.3, 1] }}
       className={className}
@@ -46,381 +35,378 @@ const FadeUp = ({ children, delay = 0, className = '' }) => {
   );
 };
 
-const ScaleIn = ({ children, delay = 0, className = '' }) => {
+/* ═══════════════════════════════════════════
+   SLEEK MOCK DASHBOARD VISUAL
+   ═══════════════════════════════════════════ */
+const DashboardGraphic = () => {
   const ref = useRef(null);
-  const isInView = useInView(ref, { once: true, margin: '-60px' });
+  const { scrollYProgress } = useScroll({
+    target: ref,
+    offset: ["start end", "end start"]
+  });
+  const opacity = useTransform(scrollYProgress, [0, 0.2], [0, 1]);
+  const scale = useTransform(scrollYProgress, [0, 0.4], [0.95, 1]);
+
   return (
-    <motion.div
+    <motion.div 
       ref={ref}
-      initial={{ opacity: 0, scale: 0.85 }}
-      animate={isInView ? { opacity: 1, scale: 1 } : {}}
-      transition={{ duration: 0.9, delay, ease: [0.16, 1, 0.3, 1] }}
-      className={className}
+      style={{ opacity, scale }}
+      className="relative w-full max-w-lg mx-auto lg:mx-0"
     >
-      {children}
-    </motion.div>
-  );
-};
-
-/* ═══════════════════════════════════════════
-   ANIMATED ORB BACKGROUND
-   ═══════════════════════════════════════════ */
-const OrbBackground = () => {
-  const mouseX = useMotionValue(0);
-  const mouseY = useMotionValue(0);
-  const smoothX = useSpring(mouseX, { damping: 40, stiffness: 150 });
-  const smoothY = useSpring(mouseY, { damping: 40, stiffness: 150 });
-
-  useEffect(() => {
-    const handleMouse = (e) => {
-      mouseX.set(e.clientX - window.innerWidth / 2);
-      mouseY.set(e.clientY - window.innerHeight / 2);
-    };
-    window.addEventListener('mousemove', handleMouse);
-    return () => window.removeEventListener('mousemove', handleMouse);
-  }, []);
-
-  return (
-    <div className="fixed inset-0 pointer-events-none overflow-hidden z-0">
-      <motion.div
-        className="absolute w-[900px] h-[900px] rounded-full opacity-[0.07]"
-        style={{
-          background: 'radial-gradient(circle, #00E5FF 0%, transparent 70%)',
-          x: useTransform(smoothX, v => v * 0.05),
-          y: useTransform(smoothY, v => v * 0.05),
-          top: '10%',
-          left: '15%',
-        }}
-      />
-      <motion.div
-        className="absolute w-[700px] h-[700px] rounded-full opacity-[0.06]"
-        style={{
-          background: 'radial-gradient(circle, #FF00E5 0%, transparent 70%)',
-          x: useTransform(smoothX, v => v * -0.03),
-          y: useTransform(smoothY, v => v * -0.03),
-          bottom: '5%',
-          right: '10%',
-        }}
-      />
-      <motion.div
-        className="absolute w-[500px] h-[500px] rounded-full opacity-[0.04]"
-        style={{
-          background: 'radial-gradient(circle, #39FF14 0%, transparent 70%)',
-          x: useTransform(smoothX, v => v * 0.02),
-          y: useTransform(smoothY, v => v * 0.02),
-          top: '50%',
-          left: '50%',
-        }}
-      />
-    </div>
-  );
-};
-
-/* ═══════════════════════════════════════════
-   ANIMATED FLOATING RINGS (Hero Visual)
-   ═══════════════════════════════════════════ */
-const FloatingRings = () => (
-  <div className="relative w-[400px] h-[400px] md:w-[500px] md:h-[500px]">
-    {/* Outer ring */}
-    <motion.div
-      animate={{ rotate: 360 }}
-      transition={{ duration: 25, repeat: Infinity, ease: 'linear' }}
-      className="absolute inset-0 rounded-full border border-[#00E5FF]/20"
-    />
-    {/* Middle ring */}
-    <motion.div
-      animate={{ rotate: -360 }}
-      transition={{ duration: 18, repeat: Infinity, ease: 'linear' }}
-      className="absolute inset-[15%] rounded-full border border-[#FF00E5]/20"
-    >
-      <div className="absolute -top-1.5 left-1/2 w-3 h-3 rounded-full bg-[#FF00E5] shadow-[0_0_20px_#FF00E5]" />
-    </motion.div>
-    {/* Inner ring */}
-    <motion.div
-      animate={{ rotate: 360 }}
-      transition={{ duration: 12, repeat: Infinity, ease: 'linear' }}
-      className="absolute inset-[30%] rounded-full border border-[#39FF14]/20"
-    >
-      <div className="absolute -bottom-1.5 right-1/4 w-3 h-3 rounded-full bg-[#39FF14] shadow-[0_0_20px_#39FF14]" />
-    </motion.div>
-    {/* Center glow */}
-    <div className="absolute inset-[38%] rounded-full bg-gradient-to-br from-[#00E5FF]/10 to-[#FF00E5]/10 backdrop-blur-xl flex items-center justify-center border border-white/5">
-      <motion.div
-        animate={{ scale: [1, 1.15, 1] }}
-        transition={{ duration: 3, repeat: Infinity, ease: 'easeInOut' }}
-      >
-        <Wallet size={48} className="text-[#00E5FF]" />
-      </motion.div>
-    </div>
-    {/* Floating data points */}
-    <motion.div
-      animate={{ y: [-8, 8, -8] }}
-      transition={{ duration: 4, repeat: Infinity, ease: 'easeInOut' }}
-      className="absolute top-[10%] right-[5%] px-3 py-1.5 rounded-full bg-[#111417]/80 backdrop-blur-md border border-[#39FF14]/30 text-xs font-mono text-[#39FF14] flex items-center gap-1.5"
-    >
-      <TrendingUp size={12} /> +12.4%
-    </motion.div>
-    <motion.div
-      animate={{ y: [6, -6, 6] }}
-      transition={{ duration: 3.5, repeat: Infinity, ease: 'easeInOut' }}
-      className="absolute bottom-[15%] left-[0%] px-3 py-1.5 rounded-full bg-[#111417]/80 backdrop-blur-md border border-[#FF00E5]/30 text-xs font-mono text-[#FF00E5] flex items-center gap-1.5"
-    >
-      <TrendingDown size={12} /> -$42 saved
-    </motion.div>
-    <motion.div
-      animate={{ y: [-5, 10, -5] }}
-      transition={{ duration: 5, repeat: Infinity, ease: 'easeInOut' }}
-      className="absolute top-[45%] left-[-10%] px-3 py-1.5 rounded-full bg-[#111417]/80 backdrop-blur-md border border-[#00E5FF]/30 text-xs font-mono text-[#00E5FF] flex items-center gap-1.5"
-    >
-      <Sparkles size={12} /> AI Insight
-    </motion.div>
-  </div>
-);
-
-/* ═══════════════════════════════════════════
-   MOCK DASHBOARD PREVIEW
-   ═══════════════════════════════════════════ */
-const DashboardPreview = () => {
-  const ref = useRef(null);
-  const isInView = useInView(ref, { once: true, margin: '-100px' });
-
-  return (
-    <motion.div
-      ref={ref}
-      initial={{ opacity: 0, y: 80, rotateX: 8 }}
-      animate={isInView ? { opacity: 1, y: 0, rotateX: 0 } : {}}
-      transition={{ duration: 1.2, ease: [0.16, 1, 0.3, 1] }}
-      className="relative mx-auto max-w-5xl"
-      style={{ perspective: '1200px' }}
-    >
-      {/* Browser chrome */}
-      <div className="rounded-t-2xl bg-[#1a1c20] border border-white/5 border-b-0 px-4 py-3 flex items-center gap-2">
-        <div className="flex gap-1.5">
-          <div className="w-3 h-3 rounded-full bg-[#ff5f57]" />
-          <div className="w-3 h-3 rounded-full bg-[#ffbd2e]" />
-          <div className="w-3 h-3 rounded-full bg-[#28c840]" />
-        </div>
-        <div className="flex-1 ml-4">
-          <div className="max-w-md mx-auto bg-[#111318]/80 rounded-lg px-4 py-1 text-xs text-[#849396] text-center font-mono">
-            ledgermind.ai/dashboard
+      <div className="rounded-2xl border border-(--border-color) bg-(--card-bg) backdrop-blur-3xl shadow-[0_32px_64px_-16px_rgba(0,0,0,0.6)] overflow-hidden flex flex-col transition-colors duration-300">
+        {/* Mock Topbar */}
+        <div className="h-10 border-b border-(--border-color) flex items-center justify-between px-4 bg-(--text-main)/5">
+          <div className="flex gap-1.5">
+            <div className="w-2.5 h-2.5 rounded-full bg-(--text-main)/10" />
+            <div className="w-2.5 h-2.5 rounded-full bg-(--text-main)/10" />
+            <div className="w-2.5 h-2.5 rounded-full bg-(--text-main)/10" />
           </div>
+          <span className="text-[9px] text-(--text-muted) font-bold uppercase tracking-[0.2em]">Live Analysis</span>
+          <div className="w-10" />
         </div>
-      </div>
-      {/* Dashboard content */}
-      <div className="rounded-b-2xl bg-[#0c0e12] border border-white/5 border-t-0 p-6 overflow-hidden">
-        <div className="grid grid-cols-12 gap-4">
-          {/* Sidebar mock */}
-          <div className="col-span-2 space-y-3">
-            <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-[#00E5FF]/10 border border-[#00E5FF]/20">
-              <PieChart size={14} className="text-[#00E5FF]" />
-              <span className="text-xs text-[#00E5FF] font-medium">Dashboard</span>
+
+        {/* Mock Content: Monthly Burn Style (from reference) */}
+        <div className="p-8 space-y-8">
+          <div>
+            <p className="text-[10px] font-black text-(--text-muted) uppercase tracking-widest mb-2">Monthly Burn</p>
+            <div className="flex items-baseline gap-2">
+              <span className="text-5xl lg:text-7xl font-black text-(--text-main) tracking-tighter">₹5,147</span>
+              <span className="text-xs font-bold text-error-500 bg-error-500/10 px-2 py-0.5 rounded-md">+₹330</span>
             </div>
-            {['Expenses', 'Analytics', 'AI Chat', 'Budgets'].map((item, i) => (
-              <div key={i} className="flex items-center gap-2 px-3 py-2 rounded-lg text-[#849396] hover:bg-white/5 transition-colors">
-                <div className="w-3.5 h-3.5 rounded bg-[#282a2e]" />
-                <span className="text-xs">{item}</span>
+            <p className="text-[10px] text-(--text-muted) mt-2 font-medium">across <span className="text-(--text-main)">6 active subscriptions</span></p>
+          </div>
+
+          <div className="space-y-4">
+            {[
+              { name: "Netflix", price: "₹649", color: "bg-red-500" },
+              { name: "Spotify", price: "₹119", color: "bg-green-500" },
+              { name: "Hotstar", price: "₹299", color: "bg-blue-500" },
+              { name: "ChatGPT Plus", price: "₹1,650", color: "bg-emerald-500" }
+            ].map((sub, i) => (
+              <div key={i} className="flex items-center justify-between group">
+                <div className="flex items-center gap-3">
+                  <div className={`w-1.5 h-1.5 rounded-full ${sub.color}`} />
+                  <span className="text-sm font-semibold text-(--text-main)/80 group-hover:text-(--text-main) transition-colors">{sub.name}</span>
+                </div>
+                <span className="text-sm font-mono text-(--text-muted)">{sub.price}</span>
               </div>
             ))}
           </div>
-          {/* Main content */}
-          <div className="col-span-10 space-y-4">
-            {/* Stats row */}
-            <div className="grid grid-cols-3 gap-3">
-              {[
-                { label: 'Total Balance', value: '$24,580', change: '+8.2%', color: '#00E5FF' },
-                { label: 'Monthly Spend', value: '$3,420', change: '-12%', color: '#39FF14' },
-                { label: 'Subscriptions', value: '14 Active', change: '2 flagged', color: '#FF00E5' },
-              ].map((stat, i) => (
-                <motion.div
-                  key={i}
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={isInView ? { opacity: 1, y: 0 } : {}}
-                  transition={{ delay: 0.4 + i * 0.15, duration: 0.6 }}
-                  className="rounded-xl bg-[#191c1f] p-4 border border-white/5"
-                >
-                  <p className="text-[10px] uppercase tracking-wider text-[#849396] mb-1">{stat.label}</p>
-                  <p className="text-xl font-bold text-white">{stat.value}</p>
-                  <p className="text-[10px] mt-1" style={{ color: stat.color }}>{stat.change}</p>
-                </motion.div>
-              ))}
-            </div>
-            {/* Chart area */}
-            <div className="rounded-xl bg-[#191c1f] p-4 border border-white/5 h-40 flex items-end gap-1">
-              {[35, 55, 45, 70, 50, 80, 60, 90, 75, 55, 65, 85, 70, 60, 50, 75, 80, 65, 90, 70].map((h, i) => (
-                <motion.div
-                  key={i}
-                  initial={{ height: 0 }}
-                  animate={isInView ? { height: `${h}%` } : {}}
-                  transition={{ delay: 0.6 + i * 0.03, duration: 0.5, ease: 'easeOut' }}
-                  className="flex-1 rounded-t"
-                  style={{
-                    background: `linear-gradient(to top, ${i % 3 === 0 ? '#00E5FF' : i % 3 === 1 ? '#39FF14' : '#FF00E5'}30, transparent)`,
-                    borderTop: `2px solid ${i % 3 === 0 ? '#00E5FF' : i % 3 === 1 ? '#39FF14' : '#FF00E5'}`,
-                  }}
-                />
-              ))}
-            </div>
+
+          <div className="pt-4 border-t border-(--border-color) flex items-center justify-between">
+            <span className="text-[10px] font-bold text-(--text-muted) uppercase tracking-wider">Total Projected</span>
+            <span className="text-lg font-bold text-(--text-main) tracking-tight">₹12,450.00</span>
           </div>
         </div>
       </div>
-      {/* Glow effect under the preview */}
-      <div className="absolute -bottom-20 left-1/2 -translate-x-1/2 w-3/4 h-40 bg-[#00E5FF]/10 blur-[80px] rounded-full pointer-events-none" />
+
+      {/* AI Insight Pill - Level & Precise Edge Trace */}
+      <motion.div 
+        animate={{ 
+          x: [0, 510, 510, 0, 0], // Precise width of max-w-lg card
+          y: [0, 0, 420, 420, 0], // Precise height of the card content
+        }}
+        transition={{ 
+          duration: 15,
+          repeat: Infinity,
+          ease: "linear"
+        }}
+        // Positioned at the exact top-left corner without any rotation
+        className="absolute -left-24 -top-8 z-50 pointer-events-auto"
+      >
+        <div className="bg-primary-500/95 backdrop-blur-md text-white px-5 py-2.5 rounded-xl flex items-center gap-3 border border-white/20 shadow-[0_10px_30px_rgba(59,130,246,0.3)]">
+          <div className="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center">
+            <Bot size={18} className="text-white" />
+          </div>
+          <div className="flex flex-col">
+             <span className="text-[11px] font-black uppercase tracking-wider">AI INSIGHT</span>
+             <span className="text-[9px] font-bold text-white/50 uppercase">Precision Scanning</span>
+          </div>
+        </div>
+      </motion.div>
     </motion.div>
   );
 };
-
-
 
 /* ═══════════════════════════════════════════
    MAIN LANDING PAGE
    ═══════════════════════════════════════════ */
 const Landing = () => {
   const { user } = useAuth();
-  const heroRef = useRef(null);
-  const { scrollYProgress } = useScroll();
+  const [theme, setTheme] = useState('dark');
 
-  const heroOpacity = useTransform(scrollYProgress, [0, 0.15], [1, 0]);
-  const heroScale = useTransform(scrollYProgress, [0, 0.15], [1, 0.95]);
-  const navBg = useTransform(scrollYProgress, [0, 0.05], ['rgba(5,7,10,0)', 'rgba(5,7,10,0.85)']);
+  const toggleTheme = () => {
+    const newTheme = theme === 'dark' ? 'light' : 'dark';
+    setTheme(newTheme);
+    document.documentElement.setAttribute('data-theme', newTheme);
+  };
 
+  useEffect(() => {
+    document.documentElement.setAttribute('data-theme', theme);
+  }, []);
+  
   if (user) {
     return <Navigate to="/dashboard" />;
   }
 
+  const containerVariants = {
+    hidden: { opacity: 0 },
+    visible: {
+      opacity: 1,
+      transition: {
+        staggerChildren: 0.1,
+        delayChildren: 0.1
+      }
+    }
+  };
+
+  const itemVariants = {
+    hidden: { opacity: 0, y: 20 },
+    visible: { opacity: 1, y: 0, transition: { duration: 0.6, ease: "easeOut" } }
+  };
+
   return (
-    <div className="bg-[#05070a] text-[#e1e2e7] overflow-x-hidden">
-      <OrbBackground />
+    <div className="bg-(--bg-main) text-(--text-main) overflow-x-hidden min-h-screen relative">
+      {/* Cinematic Abstract Video Background - High Visibility */}
+      <div className="absolute inset-0 -z-10 overflow-hidden pointer-events-none opacity-60">
+        <video
+          autoPlay
+          loop
+          muted
+          playsInline
+          className="w-full h-full object-cover scale-105"
+        >
+          <source src="https://assets.codepen.io/3364143/7btrrd.mp4" type="video/mp4" />
+        </video>
+        {/* Subtle overlay to ensure video is the focus while keeping text readable */}
+        <div className="absolute inset-0 bg-(--bg-main)/40 backdrop-blur-[0.5px]" />
+      </div>
+
+      {/* Elegant Grid Background */}
+      <div className="absolute inset-0 pointer-events-none opacity-[0.03] z-0"
+        style={{
+          backgroundImage: `linear-gradient(var(--grid-line) 1px, transparent 1px), linear-gradient(90deg, var(--grid-line) 1px, transparent 1px)`,
+          backgroundSize: '40px 40px',
+        }}
+      />
+      <div className="absolute top-0 inset-x-0 h-[500px] bg-linear-to-b from-primary-900/10 to-transparent pointer-events-none z-0" />
 
       {/* ── NAVBAR ── */}
-      <motion.nav
-        style={{ backgroundColor: navBg }}
-        className="fixed top-0 w-full z-[100] backdrop-blur-xl border-b border-white/[0.03]"
+      <motion.nav 
+        initial={{ y: -20, opacity: 0 }}
+        animate={{ y: 0, opacity: 1 }}
+        transition={{ duration: 0.6, ease: "easeOut" }}
+        className="fixed top-0 w-full z-100 bg-(--nav-bg) backdrop-blur-xl border-b border-(--border-color)"
       >
-        <div className="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center">
-          <Link to="/" className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-[#00E5FF] to-[#FF00E5] flex items-center justify-center shadow-[0_0_25px_rgba(0,229,255,0.3)]">
-              <Wallet size={20} className="text-[#05070a]" />
+        <div className="w-full px-6 py-4 flex justify-between items-center">
+          <Link to="/" className="flex items-center gap-3 group">
+            <div className="w-10 h-10 rounded-xl bg-(--card-bg) border border-(--border-color) flex items-center justify-center group-hover:border-primary-500 transition-colors">
+              <Wallet size={20} className="text-primary-500" />
             </div>
-            <span className="text-xl font-black tracking-tight text-white">LEDGERMIND</span>
+            <span className="text-xl font-black tracking-tighter text-(--text-main)">LEDGERMIND</span>
           </Link>
-          <div className="flex items-center gap-3">
-            <Link to="/login" className="px-5 py-2.5 rounded-full text-sm font-medium text-[#bac9cc] hover:text-white transition-colors">
+          <div className="flex items-center gap-4">
+            <button onClick={toggleTheme} className="p-2 rounded-full hover:bg-white/10 transition-colors">
+              {theme === 'dark' ? <Sun size={20} /> : <Moon size={20} />}
+            </button>
+            <Link to="/login" className="text-sm font-medium text-dark-300 hover:text-white transition-colors">
               Sign in
             </Link>
-            <Link to="/register" className="px-5 py-2.5 rounded-full text-sm font-bold bg-white text-[#05070a] hover:bg-[#e1e2e7] transition-colors">
-              Get Started
+            <Link to="/register" className="gradient-primary px-5 py-2.5 rounded-lg text-sm font-semibold flex items-center gap-1 group">
+              Get Started <ChevronRight size={14} className="group-hover:translate-x-0.5 transition-transform" />
             </Link>
           </div>
         </div>
       </motion.nav>
 
-      {/* ── HERO SECTION ── */}
-      <motion.section
-        ref={heroRef}
-        style={{ opacity: heroOpacity, scale: heroScale }}
-        className="relative min-h-screen flex items-center justify-center px-6 pt-20"
-      >
-        <div className="max-w-7xl mx-auto w-full grid lg:grid-cols-2 gap-16 items-center">
-          {/* Left - Copy */}
-          <div>
-            <motion.div
-              initial={{ opacity: 0, y: 30 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.8, delay: 0.2 }}
+      {/* NEW SPLIT HERO SECTION */}
+      <section className="relative min-h-screen flex flex-col lg:flex-row overflow-hidden border-b border-(--border-color) bg-(--bg-main)">
+        {/* Left Side: Content Panel (Split background effect) */}
+        <div className="flex-1 px-6 lg:px-16 pt-24 lg:pt-32 flex flex-col justify-start relative z-20 overflow-hidden lg:bg-transparent">
+          {/* Subtle light pulse behind text (Left Side) */}
+          <div className="absolute top-48 left-0 w-[400px] h-[400px] bg-primary-500/5 blur-[120px] rounded-full pointer-events-none -z-10" />
+          
+          <motion.div 
+            variants={containerVariants}
+            initial="hidden"
+            animate="visible"
+            className="max-w-xl mx-auto lg:mx-0 text-left"
+          >
+            <motion.div variants={itemVariants} className="flex items-center gap-3 mb-8 lg:mb-10">
+              <div className="h-px w-8 bg-primary-500" />
+              <span className="text-[10px] md:text-xs font-black tracking-[0.2em] text-primary-500 uppercase">Personal Finance Intelligence</span>
+            </motion.div>
+
+            <motion.h1 
+              variants={itemVariants}
+              className="flex flex-col text-6xl md:text-7xl lg:text-[7.5rem] font-black leading-[0.82] lg:leading-[0.78] tracking-tighter uppercase mb-6 lg:mb-8 select-none"
             >
-              <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-[#00E5FF]/10 border border-[#00E5FF]/20 mb-8">
-                <div className="w-1.5 h-1.5 rounded-full bg-[#00E5FF] animate-pulse" />
-                <span className="text-xs font-semibold text-[#00E5FF] tracking-wider uppercase">v2.0 — AI-Powered Financial Copilot</span>
+              <span className="text-(--text-main)">Precision.</span>
+              <div className="overflow-hidden">
+                <span className="text-outline text-(--text-main)/30 block group-hover:text-(--text-main) transition-colors duration-500">Intelligence.</span>
+              </div>
+              <span className="text-primary-500 text-glow">Finance.</span>
+            </motion.h1>
+
+            <motion.div variants={itemVariants} className="max-w-md">
+              <p className="text-(--text-muted) text-base md:text-xl leading-relaxed mb-8 lg:mb-10">
+                Stop guessing. Start knowing. LedgerMind connects your data to our ultra-smart AI copilot. 
+                Experience absolute financial clarity in one ruthlessly clean dashboard.
+              </p>
+
+              <div className="flex flex-wrap items-center gap-5 lg:gap-6">
+                <Link to="/register" className="gradient-primary px-8 py-4 rounded-lg font-black tracking-tight flex items-center justify-center gap-3 group shadow-lg shadow-primary-500/10 w-full sm:w-auto">
+                  GET STARTED FOR FREE
+                  <ArrowRight size={20} className="group-hover:translate-x-1.5 transition-transform" />
+                </Link>
+                <div className="flex flex-col">
+                   <span className="text-xs text-(--text-muted) font-medium">Already have an account?</span>
+                   <Link to="/login" className="text-xs text-(--text-main) underline underline-offset-4 hover:text-primary-400 transition-colors">Sign in here →</Link>
+                </div>
               </div>
             </motion.div>
 
-            <motion.h1
-              initial={{ opacity: 0, y: 40 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.9, delay: 0.35 }}
-              className="text-5xl md:text-7xl font-black leading-[0.95] tracking-tighter text-white mb-8"
-            >
-              See where
-              <br />
-              your money
-              <br />
-              <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#00E5FF] via-[#39FF14] to-[#FF00E5]">
-                actually goes.
-              </span>
-            </motion.h1>
-
-            <motion.p
-              initial={{ opacity: 0, y: 30 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.8, delay: 0.5 }}
-              className="text-lg text-[#849396] max-w-lg leading-relaxed mb-10"
-            >
-              Upload bank statements. Get AI-powered insights. Track subscriptions.
-              Prevent impulse spending. All in one obsidian-grade interface.
-            </motion.p>
-
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.7, delay: 0.65 }}
-              className="flex items-center gap-4"
-            >
-              <Link to="/register" className="group px-8 py-4 rounded-full font-bold bg-gradient-to-r from-[#00E5FF] to-[#39FF14] text-[#05070a] shadow-[0_0_40px_rgba(0,229,255,0.25)] hover:shadow-[0_0_60px_rgba(0,229,255,0.4)] transition-all flex items-center gap-2">
-                Start Free
-                <ArrowRight size={18} className="group-hover:translate-x-1 transition-transform" />
-              </Link>
-              <Link to="/login" className="px-6 py-4 rounded-full font-medium border border-[#3b494c] hover:border-[#00E5FF]/40 text-[#bac9cc] hover:text-white transition-all">
-                View Demo
-              </Link>
+            {/* Social Proof (Reference Image Style) */}
+            <motion.div variants={itemVariants} className="mt-12 lg:mt-16 flex items-center gap-4">
+              <div className="flex -space-x-3">
+                {[1, 2, 3, 4].map(i => (
+                  <div key={i} className={`w-9 h-9 rounded-full border-2 border-dark-900 bg-dark-800 flex items-center justify-center overflow-hidden`}>
+                     <div className="w-full h-full bg-linear-to-br from-dark-700 to-dark-800" />
+                  </div>
+                ))}
+              </div>
+              <p className="text-[10px] md:text-xs text-dark-500 font-medium">
+                <span className="text-white font-bold">2,400+</span> users building wealth today.
+              </p>
             </motion.div>
-          </div>
-
-          {/* Right - Animated Visual */}
-          <motion.div
-            initial={{ opacity: 0, scale: 0.8 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ duration: 1.2, delay: 0.4, ease: [0.16, 1, 0.3, 1] }}
-            className="hidden lg:flex justify-center"
-          >
-            <FloatingRings />
           </motion.div>
         </div>
 
-        {/* Scroll indicator */}
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 1.5 }}
-          className="absolute bottom-10 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2"
-        >
-          <span className="text-[10px] uppercase tracking-[0.3em] text-[#849396]">Scroll to explore</span>
-          <motion.div animate={{ y: [0, 8, 0] }} transition={{ duration: 1.5, repeat: Infinity }}>
-            <ChevronDown size={18} className="text-[#849396]" />
-          </motion.div>
-        </motion.div>
-      </motion.section>
+        {/* Right Side: Dashboard Panel (Split-tone dark background) */}
+        <div className="flex-1 bg-black/40 lg:bg-black/60 relative flex flex-col items-center justify-center lg:pl-12 lg:pb-0 pb-20 mt-12 lg:mt-0 px-6">
+           {/* Mobile indicator line */}
+           <div className="lg:hidden w-12 h-1 bg-dark-700 rounded-full mb-12 opacity-50" />
 
-      {/* ── DASHBOARD PREVIEW ── */}
-      <section className="py-32 px-6">
-        <FadeUp className="text-center mb-16">
-          <p className="text-xs uppercase tracking-[0.3em] text-[#00E5FF] font-semibold mb-4">The Command Center</p>
-          <h2 className="text-4xl md:text-5xl font-black text-white tracking-tight">
-            Your finances. Illuminated.
-          </h2>
-        </FadeUp>
-        <DashboardPreview />
+           <div className="absolute top-10 right-10 hidden lg:flex items-center gap-4 z-30">
+              <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-success-500/10 border border-success-500/20">
+                <div className="w-1.5 h-1.5 rounded-full bg-success-500 animate-pulse" />
+                <span className="text-[10px] font-bold text-success-500 uppercase tracking-widest">LIVE DASHBOARD</span>
+              </div>
+           </div>
+
+           <div className="w-full max-w-2xl transform lg:scale-105 lg:translate-x-12 relative">
+              <DashboardGraphic />
+           </div>
+
+           {/* Backdrop Texture for Right Panel */}
+           <div className="absolute inset-0 z-0 pointer-events-none overflow-hidden">
+              <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full h-full bg-primary-900/10 blur-[150px] mix-blend-soft-light" />
+           </div>
+        </div>
       </section>
 
 
+      {/* ── TRENDY BENTO GRID FEATURES ── */}
+      <section className="py-24 lg:py-32 px-6 relative overflow-hidden bg-(--bg-main)">
+        <div className="max-w-7xl mx-auto">
+          <FadeUp className="mb-16 lg:mb-24">
+            <h2 className="text-xs font-black tracking-[0.3em] text-primary-500 uppercase mb-4">The Future of Finance</h2>
+            <p className="text-3xl lg:text-5xl font-black text-(--text-main) tracking-tighter max-w-2xl">
+              Engineered for the 1%. <br/>
+              <span className="text-(--text-muted)">Master your wealth.</span>
+            </p>
+          </FadeUp>
+
+          <div className="grid grid-cols-1 md:grid-cols-12 gap-4 lg:gap-6 auto-rows-[250px] lg:auto-rows-[300px]">
+            {/* LARGE BENTO CARD: AI Analysis */}
+            <FadeUp delay={0.1} className="md:col-span-8 group relative overflow-hidden rounded-3xl border border-(--border-color) bg-(--bento-bg) p-8 flex flex-col justify-between">
+              <div className="absolute top-0 right-0 p-8 opacity-20 group-hover:opacity-40 transition-opacity">
+                 <Bot size={120} strokeWidth={1} className="text-primary-500" />
+              </div>
+              <div className="relative z-10">
+                <div className="w-10 h-10 rounded-lg bg-primary-500/10 border border-primary-500/20 flex items-center justify-center mb-6">
+                  <Bot size={20} className="text-primary-500" />
+                </div>
+                <h3 className="text-2xl font-black text-(--text-main) mb-3">Autonomous AI Insights</h3>
+                <p className="text-(--text-muted) max-w-md text-sm leading-relaxed">
+                  Our neural engine scans your statements in real-time, identifying hidden 
+                  patterns and waste that humans simply can't see.
+                </p>
+              </div>
+              {/* Mock Chat Preview inside Bento */}
+              <div className="mt-8 flex flex-col gap-2 relative z-10">
+                 <div className="bg-(--card-bg) border border-(--border-color) p-3 rounded-2xl rounded-bl-sm max-w-[200px]">
+                    <p className="text-[10px] text-(--text-main) font-medium italic">"I found ₹2,400 in duplicate Spotify charges this month."</p>
+                 </div>
+                 <div className="bg-primary-600 p-3 rounded-2xl rounded-br-sm self-end text-[10px] font-bold text-white uppercase tracking-wider">
+                    REDUCE WASTE
+                 </div>
+              </div>
+            </FadeUp>
+
+            {/* SMALL BENTO CARD: Security */}
+            <FadeUp delay={0.2} className="md:col-span-4 group relative overflow-hidden rounded-3xl border border-(--border-color) bg-linear-to-b from-(--bento-bg) to-(--bg-main) p-8 flex flex-col items-center justify-center text-center">
+               <motion.div 
+                 animate={{ scale: [1, 1.1, 1] }} 
+                 transition={{ repeat: Infinity, duration: 4 }}
+                 className="w-20 h-20 rounded-full bg-primary-500/5 border border-primary-500/20 flex items-center justify-center mb-6 relative"
+               >
+                  <Shield size={32} className="text-primary-500" />
+                  <div className="absolute inset-0 rounded-full border border-primary-500/40 animate-ping" />
+               </motion.div>
+               <h3 className="text-xl font-bold text-(--text-main) mb-2">Vault-Grade</h3>
+               <p className="text-(--text-muted) text-xs px-4">AES-256 end-to-end encryption. Your bank data stays your bank data.</p>
+            </FadeUp>
+
+            {/* MEDIUM BENTO CARD: Analytics */}
+            <FadeUp delay={0.3} className="md:col-span-4 group relative overflow-hidden rounded-3xl border border-(--border-color) bg-(--bento-bg) p-8 text-left">
+               <h3 className="text-xl font-bold text-(--text-main) mb-4">Precision Flow</h3>
+               <div className="space-y-3 mb-6">
+                  {[40, 70, 50, 90].map((w, i) => (
+                    <div key={i} className="h-2 w-full bg-(--card-bg) rounded-full overflow-hidden border border-(--border-color)">
+                       <motion.div 
+                         initial={{ width: 0 }}
+                         whileInView={{ width: `${w}%` }}
+                         className="h-full bg-primary-500" 
+                       />
+                    </div>
+                  ))}
+               </div>
+               <p className="text-(--text-muted) text-xs">Dynamic cash-flow visualization with zero latency.</p>
+            </FadeUp>
+
+            {/* LARGE BENTO CARD: Integration */}
+            <FadeUp delay={0.4} className="md:col-span-8 group relative overflow-hidden rounded-3xl border border-(--border-color) bg-linear-to-br from-(--bento-bg) to-(--bg-main) p-8 flex flex-col lg:flex-row items-center gap-8">
+               <div className="flex-1 text-center lg:text-left">
+                  <h3 className="text-2xl font-black text-(--text-main) mb-4">Native Bank Sync</h3>
+                  <p className="text-(--text-muted) text-sm mb-6">
+                    Connect 10,000+ financial institutions worldwide instantly through our secure gateway.
+                  </p>
+                  <div className="flex flex-wrap gap-2 justify-center lg:justify-start">
+                    {['HDFC', 'ICICI', 'SBI', 'AXIS', 'CHASE'].map(bank => (
+                      <span key={bank} className="px-3 py-1 rounded bg-black/10 border border-(--border-color) text-[10px] font-mono text-(--text-muted)">{bank}</span>
+                    ))}
+                  </div>
+               </div>
+               <div className="flex-1 w-full bg-(--bento-bg) rounded-2xl border border-(--border-color) p-4 transform rotate-1 group-hover:rotate-0 transition-transform shadow-sm">
+                  <div className="h-4 w-1/2 bg-(--text-main)/5 rounded mb-4" />
+                  <div className="h-20 w-full bg-(--text-main)/5 rounded-lg border border-dashed border-(--border-color) flex items-center justify-center">
+                     <span className="text-[10px] text-(--text-muted) italic">Processing transaction log...</span>
+                  </div>
+               </div>
+            </FadeUp>
+          </div>
+        </div>
+      </section>
 
       {/* ── FOOTER ── */}
-      <footer className="border-t border-white/[0.04] py-8 px-6">
-        <div className="max-w-7xl mx-auto flex items-center justify-between text-xs text-[#849396]">
-          <div className="flex items-center gap-2">
-            <Wallet size={14} className="text-[#00E5FF]" />
-            <span>LedgerMind © {new Date().getFullYear()}</span>
+      <footer className="border-t border-(--border-color) py-12 px-6 bg-(--bg-main)">
+        <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between text-sm text-(--text-muted)">
+          <div className="flex items-center gap-2 mb-4 md:mb-0">
+            <Wallet size={16} className="text-(--text-muted)" />
+            <span className="font-semibold text-(--text-main) tracking-wider">LEDGERMIND</span>
           </div>
-          <p>Built with MongoDB, OpenAI & React</p>
+          <p>Engineered for the modern financial professional. © {new Date().getFullYear()}</p>
         </div>
       </footer>
     </div>
