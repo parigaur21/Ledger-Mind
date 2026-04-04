@@ -119,7 +119,7 @@ Open **http://localhost:5173** in your browser.
 | GET | `/api/chat/history` | Get chat history |
 | GET | `/api/chat/insights` | Get AI insights |
 
-## Chat Commands
+## Chat Commands and Responses
 
 - `"Add 200 for groceries"` – Auto-creates expense
 - `"How much did I spend this week?"` – Queries spending
