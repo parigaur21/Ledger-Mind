@@ -1,11 +1,12 @@
 {
-  "name": "finchat-backend",
+  "name": "ledger-mind-fullstack",
   "version": "1.0.0",
-  "description": "FinChat AI Financial Copilot - Backend API",
-  "main": "server.js",
+  "description": "LedgerMind Full Stack App (Frontend + Backend)",
+  "main": "server/server.js",
   "scripts": {
-    "start": "node server.js",
-    "dev": "nodemon server.js"
+    "build": "cd client && npm install && npm run build",
+    "start": "node server/server.js",
+    "dev": "nodemon server/server.js"
   },
   "dependencies": {
     "@google/generative-ai": "^0.21.0",

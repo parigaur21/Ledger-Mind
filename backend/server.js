@@ -2,6 +2,7 @@ require('dotenv').config();
 const express = require('express');
 const http = require('http');
 const cors = require('cors');
+const path = require('path');
 const { Server } = require('socket.io');
 
 const errorHandler = require('./middleware/errorHandler');
@@ -25,11 +26,10 @@ const server = http.createServer(app);
 // ✅ Connect DB
 connectDB();
 
-// ✅ Socket.IO setup
+// ✅ Socket.IO
 const io = new Server(server, {
   cors: {
-    origin: process.env.CLIENT_URL || 'http://localhost:5173',
-    methods: ['GET', 'POST'],
+    origin: true,
     credentials: true
   }
 });
@@ -39,31 +39,12 @@ setupSocket(io);
 
 // ✅ Middleware
 app.use(cors({
-  origin: process.env.CLIENT_URL || 'http://localhost:5173',
+  origin: true,
   credentials: true
 }));
 app.use(express.json());
 
-// ✅ ROOT ROUTE (FIXES YOUR ERROR)
-app.get('/', (req, res) => {
-  res.json({
-    message: "LedgerMind API 🚀",
-    status: "Live",
-    endpoints: [
-      "/api/health",
-      "/api/auth",
-      "/api/transactions",
-      "/api/analytics",
-      "/api/budgets",
-      "/api/chat",
-      "/api/groups",
-      "/api/expenses",
-      "/api/statement"
-    ]
-  });
-});
-
-// ✅ Health check
+// ✅ Health route (keep for testing)
 app.get('/api/health', (req, res) => {
   res.json({
     status: 'ok',
@@ -82,21 +63,22 @@ app.use('/api/groups', groupRoutes);
 app.use('/api/expenses', expenseRoutes);
 app.use('/api/statement', statementRoutes);
 
-// ❌ 404 handler (optional but good)
-app.use((req, res) => {
-  res.status(404).json({
-    message: "Route not found ❌"
-  });
+// ✅ Serve frontend (Vite build)
+const clientPath = path.join(__dirname, '../client/dist');
+
+app.use(express.static(clientPath));
+
+// ✅ React fallback (IMPORTANT)
+app.get('*', (req, res) => {
+  res.sendFile(path.join(clientPath, 'index.html'));
 });
 
-// ✅ Error handler
+// ✅ Error handler (keep LAST)
 app.use(errorHandler);
 
-// ✅ PORT (Render compatible)
+// ✅ PORT
 const PORT = process.env.PORT || 5000;
 
 server.listen(PORT, () => {
-  console.log(`🚀 LedgerMind server running on port ${PORT}`);
+  console.log(`🚀 LedgerMind running on port ${PORT}`);
 });
-
-module.exports = { app, server };
