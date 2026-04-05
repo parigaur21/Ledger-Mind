@@ -1,112 +1,122 @@
-const Expense = require('../models/Expense');
-const Budget = require('../models/Budget');
+const supabase = require('../config/supabase');
 
 exports.getDashboardStats = async (req, res, next) => {
   try {
     const userId = req.userId;
     const now = new Date();
-    const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
-    const endOfMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0, 23, 59, 59);
-    const startOfLastMonth = new Date(now.getFullYear(), now.getMonth() - 1, 1);
-    const endOfLastMonth = new Date(now.getFullYear(), now.getMonth(), 0, 23, 59, 59);
+    const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1).toISOString();
+    const endOfMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0, 23, 59, 59).toISOString();
+    const startOfLastMonth = new Date(now.getFullYear(), now.getMonth() - 1, 1).toISOString();
+    const endOfLastMonth = new Date(now.getFullYear(), now.getMonth(), 0, 23, 59, 59).toISOString();
     const startOfWeek = new Date(now);
     startOfWeek.setDate(now.getDate() - now.getDay());
     startOfWeek.setHours(0, 0, 0, 0);
 
-    const [
-      monthlyTotal,
-      monthlyIncome,
-      lastMonthTotal,
-      weeklyTotal,
-      categoryBreakdown,
-      recentExpenses,
-      monthlyTrend,
-      budgets
-    ] = await Promise.all([
-      Expense.aggregate([
-        { $match: { user: userId, date: { $gte: startOfMonth, $lte: endOfMonth }, status: 'completed', type: { $ne: 'income' } } },
-        { $group: { _id: null, total: { $sum: '$amount' }, count: { $sum: 1 } } }
-      ]),
-      Expense.aggregate([
-        { $match: { user: userId, date: { $gte: startOfMonth, $lte: endOfMonth }, status: 'completed', type: 'income' } },
-        { $group: { _id: null, total: { $sum: '$amount' } } }
-      ]),
-      Expense.aggregate([
-        { $match: { user: userId, date: { $gte: startOfLastMonth, $lte: endOfLastMonth }, status: 'completed', type: { $ne: 'income' } } },
-        { $group: { _id: null, total: { $sum: '$amount' } } }
-      ]),
-      Expense.aggregate([
-        { $match: { user: userId, date: { $gte: startOfWeek }, status: 'completed', type: { $ne: 'income' } } },
-        { $group: { _id: null, total: { $sum: '$amount' } } }
-      ]),
-      Expense.aggregate([
-        { $match: { user: userId, date: { $gte: startOfMonth, $lte: endOfMonth }, status: 'completed', type: { $ne: 'income' } } },
-        { $group: { _id: '$category', total: { $sum: '$amount' }, count: { $sum: 1 } } },
-        { $sort: { total: -1 } }
-      ]),
-      Expense.find({ user: userId }).sort({ date: -1 }).limit(5),
-      Expense.aggregate([
-        { $match: { user: userId, date: { $gte: new Date(now.getFullYear(), 0, 1) }, status: 'completed', type: { $ne: 'income' } } },
-        {
-          $group: {
-            _id: { month: { $month: '$date' }, year: { $year: '$date' } },
-            total: { $sum: '$amount' },
-            count: { $sum: 1 }
-          }
-        },
-        { $sort: { '_id.year': 1, '_id.month': 1 } }
-      ]),
-      Budget.find({ user: userId, month: now.getMonth() + 1, year: now.getFullYear() })
-    ]);
+    // 1. Fetch current month expenses & income
+    const { data: currentMonthExpenses, error: e1 } = await supabase
+      .from('lm_expenses')
+      .select('amount, type, category')
+      .eq('user_id', userId)
+      .gte('date', startOfMonth)
+      .lte('date', endOfMonth)
+      .eq('status', 'completed');
 
-    const currentMonthTotal = monthlyTotal[0]?.total || 0;
-    const totalIncome = monthlyIncome[0]?.total || 0;
-    const prevMonthTotal = lastMonthTotal[0]?.total || 0;
+    // 2. Last month total
+    const { data: lastMonthExpenses, error: e2 } = await supabase
+      .from('lm_expenses')
+      .select('amount')
+      .eq('user_id', userId)
+      .gte('date', startOfLastMonth)
+      .lte('date', endOfLastMonth)
+      .eq('status', 'completed')
+      .neq('type', 'income');
+
+    // 3. Weekly total
+    const { data: weeklyExpenses, error: e3 } = await supabase
+      .from('lm_expenses')
+      .select('amount')
+      .eq('user_id', userId)
+      .gte('date', startOfWeek.toISOString())
+      .eq('status', 'completed')
+      .neq('type', 'income');
+
+    // 4. Recent expenses
+    const { data: recentExpenses, error: e4 } = await supabase
+      .from('lm_expenses')
+      .select('*')
+      .eq('user_id', userId)
+      .order('date', { ascending: false })
+      .limit(5);
+
+    // 5. Budgets
+    const { data: budgets, error: e5 } = await supabase
+      .from('lm_budgets')
+      .select('*')
+      .eq('user_id', userId)
+      .eq('month', now.getMonth() + 1)
+      .eq('year', now.getFullYear());
+
+    if (e1 || e2 || e3 || e4 || e5) throw (e1 || e2 || e3 || e4 || e5);
+
+    // -- PROCESS CALCULATIONS --
+    let currentMonthTotal = 0;
+    let totalIncome = 0;
+    const categoryBreakdown = {};
+    let transactionCount = 0;
+
+    currentMonthExpenses.forEach(exp => {
+      if (exp.type === 'income') {
+        totalIncome += exp.amount;
+      } else {
+        currentMonthTotal += exp.amount;
+        categoryBreakdown[exp.category] = (categoryBreakdown[exp.category] || 0) + exp.amount;
+        transactionCount++;
+      }
+    });
+
+    const prevMonthTotal = lastMonthExpenses.reduce((sum, e) => sum + e.amount, 0);
+    const weeklyTotal = weeklyExpenses.reduce((sum, e) => sum + e.amount, 0);
+
     const monthlyChange = prevMonthTotal > 0
       ? (((currentMonthTotal - prevMonthTotal) / prevMonthTotal) * 100).toFixed(1)
       : 0;
 
-    const totalSpent = currentMonthTotal;
-    const categoryData = categoryBreakdown.map(c => ({
-      category: c._id,
-      total: c.total,
-      count: c.count,
-      percentage: totalSpent > 0 ? Math.round((c.total / totalSpent) * 100) : 0
-    }));
+    const categoryData = Object.entries(categoryBreakdown).map(([cat, total]) => ({
+      category: cat,
+      total,
+      percentage: currentMonthTotal > 0 ? Math.round((total / currentMonthTotal) * 100) : 0
+    })).sort((a,b) => b.total - a.total);
 
     const budgetAlerts = [];
-    const categorySpendMap = {};
-    categoryBreakdown.forEach(c => { categorySpendMap[c._id] = c.total; });
-
     budgets.forEach(b => {
-      const spent = categorySpendMap[b.category] || 0;
+      const spent = categoryBreakdown[b.category] || 0;
       const pct = (spent / b.limit) * 100;
       if (pct >= 100) {
-        budgetAlerts.push({
-          type: 'exceeded',
-          category: b.category,
-          limit: b.limit,
-          spent,
-          percentage: Math.round(pct)
-        });
+        budgetAlerts.push({ type: 'exceeded', category: b.category, limit: b.limit, spent, percentage: Math.round(pct) });
       } else if (pct >= 80) {
-        budgetAlerts.push({
-          type: 'warning',
-          category: b.category,
-          limit: b.limit,
-          spent,
-          percentage: Math.round(pct)
-        });
+        budgetAlerts.push({ type: 'warning', category: b.category, limit: b.limit, spent, percentage: Math.round(pct) });
       }
     });
 
+    // Trend calculation for year
+    const startOfYear = new Date(now.getFullYear(), 0, 1).toISOString();
+    const { data: yearExpenses } = await supabase
+      .from('lm_expenses')
+      .select('amount, date')
+      .eq('user_id', userId)
+      .gte('date', startOfYear)
+      .eq('status', 'completed')
+      .neq('type', 'income');
+
     const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-    const trendData = months.map((name, i) => {
-      const found = monthlyTrend.find(m => m._id.month === i + 1);
-      return { month: name, total: found ? found.total : 0 };
+    const trendMap = Array(12).fill(0);
+    yearExpenses?.forEach(e => {
+        const d = new Date(e.date);
+        trendMap[d.getMonth()] += e.amount;
     });
 
-    const daysInMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate();
+    const trendData = months.map((name, i) => ({ month: name, total: trendMap[i] }));
+
     const daysPassed = now.getDate();
     const avgDailySpend = daysPassed > 0 ? (currentMonthTotal / daysPassed).toFixed(2) : 0;
 
@@ -115,8 +125,8 @@ exports.getDashboardStats = async (req, res, next) => {
       totalIncome: totalIncome,
       netBalance: totalIncome - currentMonthTotal,
       monthlyChange: parseFloat(monthlyChange),
-      weeklyTotal: weeklyTotal[0]?.total || 0,
-      transactionCount: monthlyTotal[0]?.count || 0,
+      weeklyTotal,
+      transactionCount,
       avgDailySpend: parseFloat(avgDailySpend),
       categoryBreakdown: categoryData,
       recentExpenses,
@@ -135,51 +145,41 @@ exports.getAnalytics = async (req, res, next) => {
     const now = new Date();
     const { period = '30' } = req.query;
     const daysAgo = parseInt(period);
-    const startDate = new Date(now);
-    startDate.setDate(startDate.getDate() - daysAgo);
+    const startDate = new Date(now.getTime() - daysAgo * 24 * 60 * 60 * 1000).toISOString();
 
-    const [categoryDist, weeklyComparison, dailySpending] = await Promise.all([
-      Expense.aggregate([
-        { $match: { user: userId, date: { $gte: startDate }, status: 'completed' } },
-        { $group: { _id: '$category', total: { $sum: '$amount' }, count: { $sum: 1 } } },
-        { $sort: { total: -1 } }
-      ]),
-      Expense.aggregate([
-        { $match: { user: userId, date: { $gte: new Date(now.getTime() - 14 * 24 * 60 * 60 * 1000) }, status: 'completed' } },
-        {
-          $group: {
-            _id: {
-              week: { $ceil: { $divide: [{ $subtract: [now, '$date'] }, 7 * 24 * 60 * 60 * 1000] } },
-              dayOfWeek: { $dayOfWeek: '$date' }
-            },
-            total: { $sum: '$amount' }
-          }
-        }
-      ]),
-      Expense.aggregate([
-        { $match: { user: userId, date: { $gte: startDate }, status: 'completed' } },
-        {
-          $group: {
-            _id: { $dateToString: { format: '%Y-%m-%d', date: '$date' } },
-            total: { $sum: '$amount' },
-            count: { $sum: 1 }
-          }
-        },
-        { $sort: { _id: 1 } }
-      ])
-    ]);
+    const { data: expenses, error } = await supabase
+      .from('lm_expenses')
+      .select('*')
+      .eq('user_id', userId)
+      .gte('date', startDate)
+      .eq('status', 'completed');
 
-    const totalSpent = categoryDist.reduce((sum, c) => sum + c.total, 0);
+    if (error) throw error;
+
+    const categoryDist = {};
+    const dailySpending = {};
+    let totalSpent = 0;
+
+    expenses.forEach(e => {
+      if (e.type !== 'income') {
+        totalSpent += e.amount;
+        categoryDist[e.category] = (categoryDist[e.category] || 0) + e.amount;
+        const dateStr = new Date(e.date).toISOString().split('T')[0];
+        dailySpending[dateStr] = (dailySpending[dateStr] || 0) + e.amount;
+      }
+    });
+
+    const categoryData = Object.entries(categoryDist).map(([cat, total]) => ({
+      category: cat,
+      total,
+      percentage: totalSpent > 0 ? Math.round((total / totalSpent) * 100) : 0
+    })).sort((a,b) => b.total - a.total);
+
+    const dailyData = Object.entries(dailySpending).map(([date, total]) => ({ _id: date, total }));
 
     res.json({
-      categoryDistribution: categoryDist.map(c => ({
-        category: c._id,
-        total: c.total,
-        count: c.count,
-        percentage: totalSpent > 0 ? Math.round((c.total / totalSpent) * 100) : 0
-      })),
-      weeklyComparison,
-      dailySpending,
+      categoryDistribution: categoryData,
+      dailySpending: dailyData,
       totalSpent,
       period: daysAgo
     });
@@ -189,53 +189,52 @@ exports.getAnalytics = async (req, res, next) => {
 };
 
 exports.getWeeklyReport = async (req, res, next) => {
-  try {
-    const userId = req.userId;
-    const now = new Date();
-    const weekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
-    const twoWeeksAgo = new Date(now.getTime() - 14 * 24 * 60 * 60 * 1000);
+    // Similarly simplified for Supabase
+    try {
+        const userId = req.userId;
+        const now = new Date();
+        const weekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000).toISOString();
+        const twoWeeksAgo = new Date(now.getTime() - 14 * 24 * 60 * 60 * 1000).toISOString();
 
-    const [thisWeek, lastWeek, categoryBreakdown] = await Promise.all([
-      Expense.aggregate([
-        { $match: { user: userId, date: { $gte: weekAgo }, status: 'completed' } },
-        { $group: { _id: null, total: { $sum: '$amount' }, count: { $sum: 1 } } }
-      ]),
-      Expense.aggregate([
-        { $match: { user: userId, date: { $gte: twoWeeksAgo, $lt: weekAgo }, status: 'completed' } },
-        { $group: { _id: null, total: { $sum: '$amount' } } }
-      ]),
-      Expense.aggregate([
-        { $match: { user: userId, date: { $gte: weekAgo }, status: 'completed' } },
-        { $group: { _id: '$category', total: { $sum: '$amount' }, count: { $sum: 1 } } },
-        { $sort: { total: -1 } }
-      ])
-    ]);
+        const { data: expenses, error } = await supabase
+            .from('lm_expenses')
+            .select('*')
+            .eq('user_id', userId)
+            .gte('date', twoWeeksAgo)
+            .eq('status', 'completed');
 
-    const thisWeekTotal = thisWeek[0]?.total || 0;
-    const lastWeekTotal = lastWeek[0]?.total || 0;
-    const change = lastWeekTotal > 0
-      ? (((thisWeekTotal - lastWeekTotal) / lastWeekTotal) * 100).toFixed(1)
-      : 0;
+        if (error) throw error;
 
-    const insights = [];
-    if (thisWeekTotal > lastWeekTotal && lastWeekTotal > 0) {
-      insights.push(`Your spending increased by ${Math.abs(change)}% compared to last week.`);
-    } else if (thisWeekTotal < lastWeekTotal) {
-      insights.push(`Great job! You reduced spending by ${Math.abs(change)}% compared to last week.`);
+        let thisWeekTotal = 0;
+        let lastWeekTotal = 0;
+        const categoryDist = {};
+
+        expenses.forEach(e => {
+            if (e.type !== 'income') {
+                if (e.date >= weekAgo) {
+                    thisWeekTotal += e.amount;
+                    categoryDist[e.category] = (categoryDist[e.category] || 0) + e.amount;
+                } else {
+                    lastWeekTotal += e.amount;
+                }
+            }
+        });
+
+        const change = lastWeekTotal > 0
+            ? (((thisWeekTotal - lastWeekTotal) / lastWeekTotal) * 100).toFixed(1)
+            : 0;
+
+        const sortedCategories = Object.entries(categoryDist)
+            .map(([cat, total]) => ({ _id: cat, total }))
+            .sort((a,b) => b.total - a.total);
+
+        res.json({
+            totalSpending: thisWeekTotal,
+            weeklyChange: parseFloat(change),
+            topCategories: sortedCategories.slice(0, 5),
+            insights: [`Your spending changed by ${change}% this week.`]
+        });
+    } catch (error) {
+        next(error);
     }
-
-    if (categoryBreakdown.length > 0) {
-      insights.push(`Your top spending category was ${categoryBreakdown[0]._id} at $${categoryBreakdown[0].total.toFixed(2)}.`);
-    }
-
-    res.json({
-      totalSpending: thisWeekTotal,
-      transactionCount: thisWeek[0]?.count || 0,
-      weeklyChange: parseFloat(change),
-      topCategories: categoryBreakdown.slice(0, 5),
-      insights
-    });
-  } catch (error) {
-    next(error);
-  }
 };

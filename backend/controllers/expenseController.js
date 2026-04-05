@@ -1,35 +1,43 @@
-const Expense = require('../models/Expense');
+const supabase = require('../config/supabase');
 
 exports.getExpenses = async (req, res, next) => {
   try {
     const { category, startDate, endDate, search, sort, page = 1, limit = 20, type } = req.query;
-    const query = { user: req.userId };
+    
+    let query = supabase
+      .from('lm_expenses')
+      .select('*', { count: 'exact' })
+      .eq('user_id', req.userId);
 
     if (type && type !== 'all') {
-      query.type = type;
+      query = query.eq('type', type);
     }
 
     if (category && category !== 'all') {
-      query.category = category;
+      query = query.eq('category', category);
     }
 
-    if (startDate || endDate) {
-      query.date = {};
-      if (startDate) query.date.$gte = new Date(startDate);
-      if (endDate) query.date.$lte = new Date(endDate);
+    if (startDate) {
+      query = query.gte('date', startDate);
+    }
+    if (endDate) {
+      query = query.lte('date', endDate);
     }
 
     if (search) {
-      query.description = { $regex: search, $options: 'i' };
+      query = query.ilike('description', `%${search}%`);
     }
 
-    const sortOption = sort === 'oldest' ? { date: 1 } : { date: -1 };
-    const skip = (parseInt(page) - 1) * parseInt(limit);
+    const sortField = 'date';
+    const sortOrder = sort === 'oldest' ? { ascending: true } : { ascending: false };
+    query = query.order(sortField, sortOrder);
 
-    const [expenses, total] = await Promise.all([
-      Expense.find(query).sort(sortOption).skip(skip).limit(parseInt(limit)),
-      Expense.countDocuments(query)
-    ]);
+    const from = (parseInt(page) - 1) * parseInt(limit);
+    const to = from + parseInt(limit) - 1;
+    query = query.range(from, to);
+
+    const { data: expenses, count: total, error } = await query;
+    if (error) throw error;
 
     res.json({
       expenses,
@@ -47,8 +55,14 @@ exports.getExpenses = async (req, res, next) => {
 
 exports.getExpense = async (req, res, next) => {
   try {
-    const expense = await Expense.findOne({ _id: req.params.id, user: req.userId });
-    if (!expense) {
+    const { data: expense, error } = await supabase
+      .from('lm_expenses')
+      .select('*')
+      .eq('id', req.params.id)
+      .eq('user_id', req.userId)
+      .single();
+
+    if (error || !expense) {
       return res.status(404).json({ message: 'Expense not found.' });
     }
     res.json(expense);
@@ -60,16 +74,23 @@ exports.getExpense = async (req, res, next) => {
 exports.createExpense = async (req, res, next) => {
   try {
     const { amount, category, description, date, status, type } = req.body;
-    const expense = await Expense.create({
-      user: req.userId,
-      amount,
-      category,
-      description,
-      type: type || 'expense',
-      date: date || Date.now(),
-      status: status || 'completed',
-      source: 'manual'
-    });
+    
+    const { data: expense, error } = await supabase
+      .from('lm_expenses')
+      .insert([{
+        user_id: req.userId,
+        amount,
+        category,
+        description,
+        type: type || 'expense',
+        date: date || new Date().toISOString(),
+        status: status || 'completed',
+        source: 'manual'
+      }])
+      .select()
+      .single();
+
+    if (error) throw error;
 
     const io = req.app.get('io');
     if (io) {
@@ -85,13 +106,15 @@ exports.createExpense = async (req, res, next) => {
 exports.updateExpense = async (req, res, next) => {
   try {
     const { amount, category, description, date, status, type } = req.body;
-    const expense = await Expense.findOneAndUpdate(
-      { _id: req.params.id, user: req.userId },
-      { amount, category, description, date, status, type },
-      { new: true, runValidators: true }
-    );
+    const { data: expense, error } = await supabase
+      .from('lm_expenses')
+      .update({ amount, category, description, date, status, type, updated_at: new Date() })
+      .eq('id', req.params.id)
+      .eq('user_id', req.userId)
+      .select()
+      .single();
 
-    if (!expense) {
+    if (error || !expense) {
       return res.status(404).json({ message: 'Expense not found.' });
     }
 
@@ -108,10 +131,13 @@ exports.updateExpense = async (req, res, next) => {
 
 exports.deleteExpense = async (req, res, next) => {
   try {
-    const expense = await Expense.findOneAndDelete({ _id: req.params.id, user: req.userId });
-    if (!expense) {
-      return res.status(404).json({ message: 'Expense not found.' });
-    }
+    const { data: expense, error } = await supabase
+      .from('lm_expenses')
+      .delete()
+      .eq('id', req.params.id)
+      .eq('user_id', req.userId);
+
+    if (error) throw error;
 
     const io = req.app.get('io');
     if (io) {

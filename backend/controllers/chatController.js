@@ -1,14 +1,14 @@
-const Expense = require('../models/Expense');
-const ChatMessage = require('../models/ChatMessage');
+const supabase = require('../config/supabase');
 const { generateAIResponse, generateInsights } = require('../services/aiService');
-const { parseExpenseFromText, isAddExpenseIntent, isQueryIntent } = require('../services/expenseParser');
+const { isAddExpenseIntent, parseExpenseFromText } = require('../services/expenseParser');
 
 exports.sendMessage = async (req, res, next) => {
   try {
     const { message } = req.body;
     const userId = req.userId;
 
-    await ChatMessage.create({ user: userId, role: 'user', content: message });
+    // 1. Save user message
+    await supabase.from('lm_chat_messages').insert([{ user_id: userId, role: 'user', content: message }]);
 
     let responseText = '';
     let metadata = {};
@@ -16,14 +16,19 @@ exports.sendMessage = async (req, res, next) => {
     if (isAddExpenseIntent(message)) {
       const parsed = parseExpenseFromText(message);
       if (parsed) {
-        const expense = await Expense.create({
-          user: userId,
-          amount: parsed.amount,
-          category: parsed.category,
-          description: parsed.description,
-          date: parsed.date,
-          source: 'chat'
-        });
+        // 2. Create expense in Supabase
+        const { data: expense, error } = await supabase
+          .from('lm_expenses')
+          .insert([{
+            user_id: userId,
+            amount: parsed.amount,
+            category: parsed.category,
+            description: parsed.description,
+            date: parsed.date,
+            source: 'chat'
+          }])
+          .select()
+          .single();
 
         const io = req.app.get('io');
         if (io) {
@@ -31,7 +36,7 @@ exports.sendMessage = async (req, res, next) => {
         }
 
         responseText = `✅ Added expense: **$${parsed.amount.toFixed(2)}** for **${parsed.category}** — "${parsed.description}" on ${parsed.date.toLocaleDateString()}. The expense has been saved to your account.`;
-        metadata = { action: 'expense_added', expense: expense.toObject() };
+        metadata = { action: 'expense_added', expense };
       } else {
         responseText = await generateAIResponse(message, userId);
       }
@@ -39,12 +44,17 @@ exports.sendMessage = async (req, res, next) => {
       responseText = await generateAIResponse(message, userId);
     }
 
-    const assistantMessage = await ChatMessage.create({
-      user: userId,
-      role: 'assistant',
-      content: responseText,
-      metadata
-    });
+    // 3. Save assistant message
+    const { data: assistantMessage, error } = await supabase
+      .from('lm_chat_messages')
+      .insert([{
+        user_id: userId,
+        role: 'assistant',
+        content: responseText,
+        metadata
+      }])
+      .select()
+      .single();
 
     const io = req.app.get('io');
     if (io) {
@@ -52,7 +62,7 @@ exports.sendMessage = async (req, res, next) => {
         role: 'assistant',
         content: responseText,
         metadata,
-        createdAt: assistantMessage.createdAt
+        createdAt: assistantMessage.created_at
       });
     }
 
@@ -61,7 +71,7 @@ exports.sendMessage = async (req, res, next) => {
         role: 'assistant',
         content: responseText,
         metadata,
-        createdAt: assistantMessage.createdAt
+        createdAt: assistantMessage.created_at
       }
     });
   } catch (error) {
@@ -72,13 +82,17 @@ exports.sendMessage = async (req, res, next) => {
 exports.getHistory = async (req, res, next) => {
   try {
     const { page = 1, limit = 50 } = req.query;
-    const skip = (parseInt(page) - 1) * parseInt(limit);
+    const from = (parseInt(page) - 1) * parseInt(limit);
+    const to = from + parseInt(limit) - 1;
 
-    const messages = await ChatMessage.find({ user: req.userId })
-      .sort({ createdAt: 1 })
-      .skip(skip)
-      .limit(parseInt(limit));
+    const { data: messages, error } = await supabase
+      .from('lm_chat_messages')
+      .select('*')
+      .eq('user_id', req.userId)
+      .order('created_at', { ascending: true })
+      .range(from, to);
 
+    if (error) throw error;
     res.json({ messages });
   } catch (error) {
     next(error);
@@ -96,7 +110,8 @@ exports.getInsights = async (req, res, next) => {
 
 exports.clearHistory = async (req, res, next) => {
   try {
-    await ChatMessage.deleteMany({ user: req.userId });
+    const { error } = await supabase.from('lm_chat_messages').delete().eq('user_id', req.userId);
+    if (error) throw error;
     res.json({ message: 'Chat history cleared.' });
   } catch (error) {
     next(error);

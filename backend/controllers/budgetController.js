@@ -1,5 +1,4 @@
-const Budget = require('../models/Budget');
-const Expense = require('../models/Expense');
+const supabase = require('../config/supabase');
 
 exports.getBudgets = async (req, res, next) => {
   try {
@@ -8,37 +7,38 @@ exports.getBudgets = async (req, res, next) => {
     const targetMonth = parseInt(month) || currentDate.getMonth() + 1;
     const targetYear = parseInt(year) || currentDate.getFullYear();
 
-    const budgets = await Budget.find({
-      user: req.userId,
-      month: targetMonth,
-      year: targetYear
-    });
+    // 1. Fetch budgets
+    const { data: budgets, error: budgetError } = await supabase
+      .from('lm_budgets')
+      .select('*')
+      .eq('user_id', req.userId)
+      .eq('month', targetMonth)
+      .eq('year', targetYear);
 
-    const startOfMonth = new Date(targetYear, targetMonth - 1, 1);
-    const endOfMonth = new Date(targetYear, targetMonth, 0, 23, 59, 59);
+    if (budgetError) throw budgetError;
 
-    const mongoose = require('mongoose');
-    const spending = await Expense.aggregate([
-      {
-        $match: {
-          user: new mongoose.Types.ObjectId(req.userId),
-          date: { $gte: startOfMonth, $lte: endOfMonth },
-          status: 'completed'
-        }
-      },
-      {
-        $group: {
-          _id: '$category',
-          total: { $sum: '$amount' }
-        }
-      }
-    ]);
+    // 2. Calculate category-wise spending for that month
+    const startOfMonth = new Date(targetYear, targetMonth - 1, 1).toISOString();
+    const endOfMonth = new Date(targetYear, targetMonth, 0, 23, 59, 59).toISOString();
+
+    const { data: expenses, error: expenseError } = await supabase
+      .from('lm_expenses')
+      .select('category, amount')
+      .eq('user_id', req.userId)
+      .gte('date', startOfMonth)
+      .lte('date', endOfMonth)
+      .eq('status', 'completed')
+      .neq('type', 'income');
+
+    if (expenseError) throw expenseError;
 
     const spendingMap = {};
-    spending.forEach(s => { spendingMap[s._id] = s.total; });
+    expenses.forEach(e => {
+        spendingMap[e.category] = (spendingMap[e.category] || 0) + e.amount;
+    });
 
     const budgetsWithSpending = budgets.map(b => ({
-      ...b.toObject(),
+      ...b,
       spent: spendingMap[b.category] || 0,
       remaining: b.limit - (spendingMap[b.category] || 0),
       percentage: Math.round(((spendingMap[b.category] || 0) / b.limit) * 100)
@@ -57,29 +57,21 @@ exports.createBudget = async (req, res, next) => {
     const targetMonth = month || currentDate.getMonth() + 1;
     const targetYear = year || currentDate.getFullYear();
 
-    const existing = await Budget.findOne({
-      user: req.userId,
-      category,
-      month: targetMonth,
-      year: targetYear
-    });
+    // Upsert budget (Supabase uses ON CONFLICT natively with upsert)
+    const { data: budget, error } = await supabase
+      .from('lm_budgets')
+      .upsert({
+        user_id: req.userId,
+        category,
+        limit,
+        month: targetMonth,
+        year: targetYear,
+        updated_at: new Date()
+      }, { onConflict: ['user_id', 'month', 'year', 'category'] })
+      .select()
+      .single();
 
-    if (existing) {
-      existing.limit = limit;
-      existing.alertAt80 = false;
-      existing.alertExceeded = false;
-      await existing.save();
-      return res.json(existing);
-    }
-
-    const budget = await Budget.create({
-      user: req.userId,
-      category,
-      limit,
-      month: targetMonth,
-      year: targetYear
-    });
-
+    if (error) throw error;
     res.status(201).json(budget);
   } catch (error) {
     next(error);
@@ -89,13 +81,15 @@ exports.createBudget = async (req, res, next) => {
 exports.updateBudget = async (req, res, next) => {
   try {
     const { limit } = req.body;
-    const budget = await Budget.findOneAndUpdate(
-      { _id: req.params.id, user: req.userId },
-      { limit, alertAt80: false, alertExceeded: false },
-      { new: true, runValidators: true }
-    );
+    const { data: budget, error } = await supabase
+      .from('lm_budgets')
+      .update({ limit, alert_at_80: false, alert_exceeded: false, updated_at: new Date() })
+      .eq('id', req.params.id)
+      .eq('user_id', req.userId)
+      .select()
+      .single();
 
-    if (!budget) {
+    if (error || !budget) {
       return res.status(404).json({ message: 'Budget not found.' });
     }
     res.json(budget);
@@ -106,10 +100,13 @@ exports.updateBudget = async (req, res, next) => {
 
 exports.deleteBudget = async (req, res, next) => {
   try {
-    const budget = await Budget.findOneAndDelete({ _id: req.params.id, user: req.userId });
-    if (!budget) {
-      return res.status(404).json({ message: 'Budget not found.' });
-    }
+    const { error } = await supabase
+      .from('lm_budgets')
+      .delete()
+      .eq('id', req.params.id)
+      .eq('user_id', req.userId);
+
+    if (error) throw error;
     res.json({ message: 'Budget deleted successfully.' });
   } catch (error) {
     next(error);

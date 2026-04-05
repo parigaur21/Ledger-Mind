@@ -7,9 +7,9 @@ const { Server } = require('socket.io');
 
 const errorHandler = require('./middleware/errorHandler');
 const setupSocket = require('./sockets/socketHandler');
-const connectDB = require('./config/db');
+const supabase = require('./config/supabase');
 
-// Routes
+// ✅ API Routes
 const transactionRoutes = require('./routes/transactionRoutes');
 const analyticsRoutes = require('./routes/analyticsRoutes');
 const aiRoutes = require('./routes/aiRoutes');
@@ -23,8 +23,16 @@ const statementRoutes = require('./routes/statementRoutes');
 const app = express();
 const server = http.createServer(app);
 
-// ✅ Connect DB
-connectDB();
+// ✅ Check Supabase (optional, but good for verification)
+(async () => {
+    try {
+        const { data, error } = await supabase.from('lm_users').select('count', { count: 'exact', head: true });
+        if (error) throw error;
+        console.log('✅ Supabase Connection: Active');
+    } catch (err) {
+        console.error('❌ Supabase Connection Failed:', err.message);
+    }
+})();
 
 // ✅ Socket.IO
 const io = new Server(server, {

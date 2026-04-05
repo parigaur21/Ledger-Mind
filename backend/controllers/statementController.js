@@ -1,7 +1,7 @@
 const fs = require('fs');
 const pdf = require('pdf-parse');
-const Expense = require('../models/Expense');
 const { OpenAI } = require("openai");
+const supabase = require('../config/supabase');
 
 const client = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY
@@ -37,7 +37,7 @@ Return ONLY a JSON array of objects with fields:
 - "type" (expense/income)
 
 Statement Text:
-${text.substring(0, 4000)} // Truncate to avoid token limits
+${text.substring(0, 4000)}
 `;
 
     const response = await client.chat.completions.create({
@@ -53,14 +53,23 @@ ${text.substring(0, 4000)} // Truncate to avoid token limits
       throw new Error('Invalid response format from AI');
     }
 
-    // Insert into MongoDB
+    // Insert into Supabase
     const expenses = transactions.map(t => ({
-      ...t,
-      user: userId,
+      user_id: userId,
+      amount: parseFloat(t.amount) || 0,
+      category: t.category,
+      description: t.description || 'Statement transaction',
+      date: t.date || new Date().toISOString(),
+      type: t.type || 'expense',
       source: 'import'
     }));
 
-    await Expense.insertMany(expenses);
+    const { data: insertedExpenses, error } = await supabase
+      .from('lm_expenses')
+      .insert(expenses)
+      .select();
+
+    if (error) throw error;
 
     // Cleanup file
     fs.unlinkSync(filePath);
