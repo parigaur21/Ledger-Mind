@@ -2,22 +2,21 @@
 
 A full-stack SaaS web application for AI-powered expense tracking, budgeting, and financial insights.
 
-
 ![Tech Stack](https://img.shields.io/badge/React-18-blue) 
 ![Node.js](https://img.shields.io/badge/Node.js-Express-green) 
-![MongoDB](https://img.shields.io/badge/MongoDB-Mongoose-brightgreen) 
+![Supabase](https://img.shields.io/badge/Supabase-PostgreSQL-blueviolet) 
 ![Socket.io](https://img.shields.io/badge/Socket.io-Realtime-yellow)
 
-
 ## Features
-- **User Authentication** – JWT-based signup, login, and protected routes
+- **User Authentication** – JWT-based signup, login, and protected routes (using Supabase storage)
 - **Expense Management** – Full CRUD with categories, search, filter, and pagination
 - **AI Chat Assistant** – Natural language expense tracking and financial Q&A (Gemini API)
 - **Real-Time Updates** – Socket.io for live dashboard and cross-session sync
 - **Budget Tracking** – Per-category monthly budgets with 80%/exceeded alerts
 - **Analytics Dashboard** – Monthly trends, category breakdown, weekly comparisons
+- **Group Splitting** – Create groups, add shared expenses, and auto-calculate "who owes who"
 - **Financial Insights Engine** – AI-generated spending analysis and savings tips
-- **Weekly Reports** – Automated spending summaries with trend insights
+- **AI Statement Upload** – Upload bank statements (PDF/TXT) for automated expense extraction
 
 ## Tech Stack
 
@@ -25,9 +24,9 @@ A full-stack SaaS web application for AI-powered expense tracking, budgeting, an
 |-------|-----------|
 | Frontend | React 18, Tailwind CSS v4, Recharts |
 | Backend | Node.js, Express.js |
-| Database | MongoDB + Mongoose |
+| Database | Supabase (PostgreSQL) |
 | Real-time | Socket.io |
-| AI | Google Gemini API |
+| AI | Google Gemini API + GPT-4o-mini (Statement Parser) |
 | Auth | JWT (jsonwebtoken + bcryptjs) |
 
 ## Project Structure
@@ -35,19 +34,18 @@ A full-stack SaaS web application for AI-powered expense tracking, budgeting, an
 ```
 LedgerMind/
 ├── backend/
-│   ├── config/          # Database connection
-│   ├── controllers/     # Route handlers
+│   ├── config/          # Supabase client setup
+│   ├── controllers/     # Supabase-based handlers
 │   ├── middleware/      # Auth & error handling
-│   ├── models/          # Mongoose schemas
 │   ├── routes/          # API route definitions
-│   ├── services/        # AI service & expense parser
+│   ├── services/        # AI service (Gemini) & Parser
 │   ├── sockets/         # Socket.io handler
 │   └── server.js        # Entry point
 ├── frontend/
 │   ├── public/          # Static assets
 │   └── src/
 │       ├── components/  # Layout, reusable UI
-│       ├── context/     # Auth context provider
+│       ├── context/     # Auth & App state
 │       ├── pages/       # All page components
 │       └── services/    # API & socket clients
 └── README.md
@@ -58,8 +56,9 @@ LedgerMind/
 ### Prerequisites
 
 - Node.js 18+
-- MongoDB (local or Atlas)
-- Gemini API key (optional, fallback responses work without it)
+- Supabase Project (URL and Anon key)
+- Gemini API key (optional, fallback responses work)
+- OpenAI API key (for AI Statement Parser)
 
 ### 1. Clone & Install
 
@@ -79,9 +78,11 @@ Copy `backend/.env.example` to `backend/.env` and update:
 
 ```env
 PORT=5000
-MONGODB_URI=mongodb://localhost:27017/ledgermind
+SUPABASE_URL=your_supabase_url
+SUPABASE_ANON_KEY=your_supabase_anon_key
 JWT_SECRET=your_secret_key
 GEMINI_API_KEY=your_gemini_api_key
+OPENAI_API_KEY=your_openai_key
 CLIENT_URL=http://localhost:5173
 ```
 
@@ -118,16 +119,13 @@ Open **http://localhost:5173** in your browser.
 | POST | `/api/chat/message` | Send chat message |
 | GET | `/api/chat/history` | Get chat history |
 | GET | `/api/chat/insights` | Get AI insights |
-
-## Chat Commands and Responses
-
-- `"Add 200 for groceries"` – Auto-creates expense
-- `"How much did I spend this week?"` – Queries spending
-- `"Show my transport expenses"` – Category query
-- `"How can I reduce my spending?"` – AI financial advice
-- `"What was my biggest expense?"` – Spending analysis
+| POST | `/api/groups` | Create group |
+| POST | `/api/groups/join` | Join group via invite code |
+| GET | `/api/groups/:id` | Get group details & balances |
+| POST | `/api/groups/:id/expenses` | Add shared expense with splits |
+| POST | `/api/statement/upload` | Upload & extract PDF statement |
 
 ## License
 
 MIT
-"# Ledger-Mind" 
+"# Ledger-Mind"
