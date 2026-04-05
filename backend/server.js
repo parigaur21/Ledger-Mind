@@ -64,7 +64,7 @@ app.use('/api/expenses', expenseRoutes);
 app.use('/api/statement', statementRoutes);
 
 // ✅ Serve frontend (Vite build)
-const clientPath = path.join(__dirname, '../client/dist');
+const clientPath = path.join(__dirname, '../frontend/dist');
 
 app.use(express.static(clientPath));
 
