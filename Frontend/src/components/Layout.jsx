@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Outlet, NavLink, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import BackgroundCanvas from './BackgroundCanvas';
 import {
   LayoutDashboard, Receipt, BarChart3, MessageSquare,
   Wallet, Settings, LogOut, Bell, Search, Menu, X, ChevronDown, Users,
@@ -14,7 +15,7 @@ const navItems = [
   { path: '/chat', label: 'AI Chat', icon: MessageSquare },
   { path: '/budgets', label: 'Budgets', icon: Wallet },
   { path: '/groups', label: 'Groups', icon: Users },
-  { path: '/settings', label: 'Settings', icon: Settings }
+  { path: '/settings', label: 'Settings', icon: Settings } //done
 ];
 
 export default function Layout() {
@@ -38,6 +39,7 @@ export default function Layout() {
 
   return (
     <div className="flex h-screen overflow-hidden bg-dark-900 relative">
+      <BackgroundCanvas theme={theme} />
       <div
         className={`fixed inset-0 bg-dark-900/60 z-40 backdrop-blur-sm lg:hidden transition-opacity duration-300 ${sidebarOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}
         onClick={() => setSidebarOpen(false)}
@@ -47,7 +49,7 @@ export default function Layout() {
         <div className="flex items-center gap-3 px-6 py-5 border-b border-dark-600/50">
           <div className="w-10 h-10 rounded-xl gradient-primary flex items-center justify-center shadow-lg shadow-primary-500/20">
             <svg width="22" height="22" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <path d="M8 12h24M8 20h16M8 28h20" stroke="white" strokeWidth="3" strokeLinecap="round"/>
+              <path d="M8 12h24M8 20h16M8 28h20" stroke="white" strokeWidth="3" strokeLinecap="round" />
             </svg>
           </div>
           <div>
@@ -66,10 +68,9 @@ export default function Layout() {
               to={path}
               onClick={() => setSidebarOpen(false)}
               className={({ isActive }) =>
-                `flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all duration-200 group ${
-                  isActive
-                    ? 'bg-primary-600/20 text-primary-400 shadow-lg shadow-primary-500/5'
-                    : 'text-dark-200 hover:text-white hover:bg-dark-700/50'
+                `flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all duration-200 group ${isActive
+                  ? 'bg-primary-600/20 text-primary-400 shadow-lg shadow-primary-500/5'
+                  : 'text-dark-200 hover:text-white hover:bg-dark-700/50'
                 }`
               }
             >

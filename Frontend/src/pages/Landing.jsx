@@ -36,6 +36,38 @@ const FadeUp = ({ children, delay = 0, className = '' }) => {
 };
 
 /* ═══════════════════════════════════════════
+   LIGHTED CURSOR
+   ═══════════════════════════════════════════ */
+const LightedCursor = () => {
+  const [mousePosition, setMousePosition] = useState({ x: -1000, y: -1000 });
+
+  useEffect(() => {
+    const updateMousePosition = (e) => {
+      setMousePosition({ x: e.clientX, y: e.clientY });
+    };
+    window.addEventListener('mousemove', updateMousePosition);
+    return () => {
+      window.removeEventListener('mousemove', updateMousePosition);
+    };
+  }, []);
+
+  return (
+    <motion.div
+      className="fixed top-0 left-0 w-[500px] h-[500px] rounded-full pointer-events-none z-100"
+      animate={{
+        x: mousePosition.x - 250,
+        y: mousePosition.y - 250,
+      }}
+      transition={{ type: 'tween', ease: 'linear', duration: 0 }}
+      style={{
+        background: 'radial-gradient(circle, rgba(59, 130, 246, 0.15) 0%, rgba(147, 51, 234, 0.1) 30%, rgba(0,0,0,0) 70%)',
+        mixBlendMode: 'screen'
+      }}
+    />
+  );
+};
+
+/* ═══════════════════════════════════════════
    SLEEK MOCK DASHBOARD VISUAL
    ═══════════════════════════════════════════ */
 const DashboardGraphic = () => {
@@ -167,8 +199,10 @@ const Landing = () => {
 
   return (
     <div className="bg-(--bg-main) text-(--text-main) overflow-x-hidden min-h-screen relative">
+      <LightedCursor />
+      
       {/* Cinematic Abstract Video Background - High Visibility */}
-      <div className="absolute inset-0 -z-10 overflow-hidden pointer-events-none opacity-60">
+      <div className="absolute inset-0 -z-10 overflow-hidden pointer-events-none opacity-80">
         <video
           autoPlay
           loop
@@ -176,10 +210,11 @@ const Landing = () => {
           playsInline
           className="w-full h-full object-cover scale-105"
         >
+          {/* A dark, dynamic tech background video */}
           <source src="https://assets.codepen.io/3364143/7btrrd.mp4" type="video/mp4" />
         </video>
         {/* Subtle overlay to ensure video is the focus while keeping text readable */}
-        <div className="absolute inset-0 bg-(--bg-main)/40 backdrop-blur-[0.5px]" />
+        <div className="absolute inset-0 bg-(--bg-main)/50 backdrop-blur-sm" />
       </div>
 
       {/* Elegant Grid Background */}
@@ -239,13 +274,25 @@ const Landing = () => {
 
             <motion.h1 
               variants={itemVariants}
-              className="flex flex-col text-6xl md:text-7xl lg:text-[7.5rem] font-black leading-[0.82] lg:leading-[0.78] tracking-tighter uppercase mb-6 lg:mb-8 select-none"
+              className="flex flex-col text-6xl md:text-7xl lg:text-[7.5rem] font-black leading-[0.82] lg:leading-[0.78] tracking-tighter uppercase mb-6 lg:mb-8 select-none relative"
             >
-              <span className="text-(--text-main)">Precision.</span>
+              <span className="text-(--text-main) relative z-10 drop-shadow-lg">Precision.</span>
               <div className="overflow-hidden">
-                <span className="text-outline text-(--text-main)/30 block group-hover:text-(--text-main) transition-colors duration-500">Intelligence.</span>
+                <motion.span 
+                  whileHover={{ scale: 1.05, opacity: 1, color: "var(--primary-color)" }}
+                  transition={{ type: "spring", stiffness: 300 }}
+                  className="text-outline text-(--text-main)/30 block transition-colors cursor-default"
+                >
+                  Intelligence.
+                </motion.span>
               </div>
-              <span className="text-primary-500 text-glow">Finance.</span>
+              <motion.span 
+                animate={{ backgroundPosition: ["0% 50%", "100% 50%", "0% 50%"] }}
+                transition={{ duration: 5, repeat: Infinity, ease: "linear" }}
+                className="text-transparent bg-clip-text bg-linear-to-r from-primary-400 via-purple-500 to-primary-600 bg-size-[200%_auto] text-glow"
+              >
+                Finance.
+              </motion.span>
             </motion.h1>
 
             <motion.div variants={itemVariants} className="max-w-md">
@@ -255,9 +302,20 @@ const Landing = () => {
               </p>
 
               <div className="flex flex-wrap items-center gap-5 lg:gap-6">
-                <Link to="/register" className="gradient-primary px-8 py-4 rounded-lg font-black tracking-tight flex items-center justify-center gap-3 group shadow-lg shadow-primary-500/10 w-full sm:w-auto">
-                  GET STARTED FOR FREE
-                  <ArrowRight size={20} className="group-hover:translate-x-1.5 transition-transform" />
+                <Link to="/register">
+                  <motion.div 
+                    whileHover={{ scale: 1.02 }}
+                    whileTap={{ scale: 0.98 }}
+                    className="gradient-primary px-8 py-4 rounded-lg font-black tracking-tight flex items-center justify-center gap-3 group shadow-primary-500/20 shadow-[0_0_40px_rgba(59,130,246,0.4)] hover:shadow-[0_0_60px_rgba(59,130,246,0.6)] transition-all w-full sm:w-auto"
+                  >
+                    GET STARTED FOR FREE
+                    <motion.div
+                      animate={{ x: [0, 5, 0] }}
+                      transition={{ duration: 1.5, repeat: Infinity, ease: "easeInOut" }}
+                    >
+                      <ArrowRight size={20} />
+                    </motion.div>
+                  </motion.div>
                 </Link>
                 <div className="flex flex-col">
                    <span className="text-xs text-(--text-muted) font-medium">Already have an account?</span>
