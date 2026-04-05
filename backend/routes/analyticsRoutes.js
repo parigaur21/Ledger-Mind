@@ -27,10 +27,11 @@ router.get('/', requireAuth, async (req, res) => {
             .reduce((acc, curr) => acc + curr.amount, 0);
 
         // Daily spending trend
+        const mongoose = require('mongoose');
         const dailySpending = await Expense.aggregate([
             {
                 $match: {
-                    user: userId,
+                    user: new mongoose.Types.ObjectId(userId),
                     date: { $gte: startDate },
                     type: 'expense'
                 }

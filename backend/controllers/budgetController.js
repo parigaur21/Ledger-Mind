@@ -17,10 +17,11 @@ exports.getBudgets = async (req, res, next) => {
     const startOfMonth = new Date(targetYear, targetMonth - 1, 1);
     const endOfMonth = new Date(targetYear, targetMonth, 0, 23, 59, 59);
 
+    const mongoose = require('mongoose');
     const spending = await Expense.aggregate([
       {
         $match: {
-          user: req.userId,
+          user: new mongoose.Types.ObjectId(req.userId),
           date: { $gte: startOfMonth, $lte: endOfMonth },
           status: 'completed'
         }

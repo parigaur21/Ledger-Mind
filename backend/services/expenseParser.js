@@ -61,7 +61,7 @@ function parseDate(text) {
 }
 
 function parseExpenseFromText(text) {
-  const amountMatch = text.match(/\$?\s*(\d+(?:,\d{3})*(?:\.\d{1,2})?)/);
+  const amountMatch = text.match(/(?:₹|\$|rs\.?\s*)?\s*(\d+(?:,\d{3})*(?:\.\d{1,2})?)/i);
   if (!amountMatch) return null;
 
   const amount = parseFloat(amountMatch[1].replace(/,/g, ''));
@@ -90,7 +90,7 @@ function isAddExpenseIntent(text) {
   const lower = text.toLowerCase();
   const addPatterns = [
     /(?:add|spent|paid|bought|got)\s/,
-    /\$\s*\d+/,
+    /(?:₹|\$|rs\.?\s*)\s*\d+/i,
     /^\d+\s+(?:for|on|at)/,
     /(?:spent|paid)\s+\d+/
   ];
